@@ -1,13 +1,21 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
 
-// Root handles the root endpoint.
+	"github.com/mitsu3s/cadence/logger"
+)
+
+// ルートハンドラー
 func Root(w http.ResponseWriter, r *http.Request) {
+	logger.LogInfo("Root endpoint accessed", "method", r.Method, "remote_addr", r.RemoteAddr)
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("hello"))
 }
 
-// Health handles the health check endpoint.
+// ヘルスチェックハンドラー
 func Health(w http.ResponseWriter, r *http.Request) {
+	logger.LogInfo("Health check requested", "method", r.Method, "remote_addr", r.RemoteAddr)
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
