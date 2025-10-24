@@ -16,50 +16,82 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
+  security-events: write
 
 jobs:
   ci:
     name: Terraform Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      # Terraform のセットアップ
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.13.4
 
-      # 初期化
       - name: Terraform init
         run: terraform init -backend=false -input=false
 
-      - name: Format check
-        run: terraform fmt -check -recursive
+      # フォーマットチェック
+      - name: Terraform fmt
+        run: terraform fmt -recursive
 
-      - name: Validate
-        run: terraform validate
+      - name: Suggest fmt changes
+        uses: reviewdog/action-suggester@v1
+        with:
+          tool_name: terraform-fmt
+          fail_on_error: "false"
 
+      # 構文・参照チェック
+      - name: Terraform validate
+        uses: reviewdog/action-terraform-validate@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          filter_mode: diff_context
+          level: error
+
+      # TFLint のセットアップ
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v6
         with:
           cache: true
 
-      - name: TFLint init (install plugins)
+      - name: TFLint init
         run: tflint --init
         env:
-          # GitHub API レート制限を回避するためにトークンを設定
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Run TFLint
-        run: tflint -f compact
+      # コードのリントチェック
+      - name: TFLint check
+        uses: reviewdog/action-tflint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          filter_mode: diff_context
+          level: error
 
       # セキュリティスキャン
-      - name: Trivy Scan
+      - name: Trivy scan
         uses: aquasecurity/trivy-action@0.33.1
         with:
           scan-type: config
           scan-ref: .
+          format: sarif
+          output: trivy.sarif
           hide-progress: true
           ignore-unfixed: true
           severity: "CRITICAL,HIGH,MEDIUM"
           exit-code: "1"
+
+      - name: Trivy review
+        uses: reviewdog/action-sarif@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_on_error: "true"
+          sarif: trivy.sarif
