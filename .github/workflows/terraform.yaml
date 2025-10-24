@@ -27,7 +27,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.9.5
+          terraform_version: 1.13.4
 
       # 初期化
       - name: Terraform init
@@ -55,7 +55,7 @@ jobs:
 
       # セキュリティスキャン
       - name: Trivy Scan
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           scan-type: config
           scan-ref: .
