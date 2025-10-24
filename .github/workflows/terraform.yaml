@@ -1,0 +1,77 @@
+name: Terraform CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - "feature/**"
+      - "hotfix/**"
+    paths:
+      - "**/*.tf"
+      - "**/*.tfvars"
+      - "modules/**"
+      - "terraform/.tflint.hcl"
+      - ".github/workflows/terraform.yaml"
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  ci:
+    name: Terraform Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Terraform のセットアップ
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+
+      - name: Terraform init
+        run: terraform init -backend=false -input=false
+
+      # フォーマットチェック
+      - name: Terraform fmt
+        run: terraform fmt -recursive
+
+      - name: Suggest fmt changes
+        uses: reviewdog/action-suggester@v1
+        with:
+          tool_name: terraform-fmt
+          fail_on_error: "false"
+
+      # 構文・参照チェック
+      - name: Terraform validate
+        uses: reviewdog/action-terraform-validate@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          filter_mode: diff_context
+          level: error
+
+      # TFLint のセットアップ
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6
+        with:
+          cache: true
+
+      - name: TFLint init
+        run: tflint --init
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      # コードのリントチェック
+      - name: TFLint check
+        uses: reviewdog/action-tflint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          filter_mode: diff_context
+          level: error

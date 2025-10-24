@@ -22,7 +22,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Golang Build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -44,7 +44,7 @@ jobs:
         run: go build ./...
 
   test:
-    name: Test
+    name: Golang Test
     runs-on: ubuntu-latest
     # ビルドが成功した場合にのみテストを実行
     needs: [build]
