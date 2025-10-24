@@ -1,0 +1,55 @@
+name: Terraform CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - "feature/**"
+      - "hotfix/**"
+    paths:
+      - "**/*.tf"
+      - "**/*.tfvars"
+      - "modules/**"
+      - ".github/workflows/terraform.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Terraform Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      # 初期化
+      - name: Terraform init
+        run: terraform init -backend=false -input=false
+
+      - name: Format check
+        run: terraform fmt -check -recursive
+
+      - name: Validate
+        run: terraform validate
+
+      # GCP 向けルールで Lint
+      - name: TFLint
+        uses: devops-infra/action-tflint@v3
+        with:
+          tflint_rulesets: "google"
+
+      # IaCセキュリティ
+      - name: Trivy
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: config
+          hide-progress: true
+          ignore-unfixed: true
+          severity: "CRITICAL,HIGH,MEDIUM"
+          exit-code: "1"
