@@ -86,4 +86,4 @@ jobs:
           filter_mode: diff_context
           level: error
           fail_level: any
-          trivy_flags: "--severity CRITICAL,HIGH,MEDIUM --ignore-unfixed --no-progress"
+          trivy_flags: "--format json --severity CRITICAL,HIGH,MEDIUM --ignore-unfixed --no-progress"
