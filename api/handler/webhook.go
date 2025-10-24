@@ -1,22 +1,38 @@
 package handler
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 )
 
+type prPayload struct {
+	Action      string `json:"action"`
+	Number      int    `json:"number"`
+	PullRequest struct {
+		Title string `json:"title"`
+	} `json:"pull_request"`
+	Repository struct {
+		FullName string `json:"full_name"`
+	} `json:"repository"`
+}
+
 func GitHubWebhook(_ string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// 署名検証は後で入れる。
 		event := r.Header.Get("X-GitHub-Event")
 		delivery := r.Header.Get("X-GitHub-Delivery")
 
-		// Bodyサイズを把握（保存はまだしない）
 		body, _ := io.ReadAll(r.Body)
-		size := len(body)
 
-		log.Printf(`github_webhook recv event=%q delivery=%q size=%d`, event, delivery, size)
+		if event == "pull_request" {
+			var p prPayload
+			_ = json.Unmarshal(body, &p) // 失敗しても落とさない
+			log.Printf(`pr event action=%q num=%d title=%q repo=%q delivery=%q`,
+				p.Action, p.Number, p.PullRequest.Title, p.Repository.FullName, delivery)
+		} else {
+			log.Printf(`github_webhook recv event=%q delivery=%q size=%d`, event, delivery, len(body))
+		}
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
