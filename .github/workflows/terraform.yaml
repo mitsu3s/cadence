@@ -88,4 +88,4 @@ jobs:
           level: error
           fail_level: any
           trivy_flags: "--quiet --format json --severity CRITICAL,HIGH,MEDIUM --ignore-unfixed --no-progress"
-          trivy_version: "0.67.2"
+          trivy_version: "v0.67.2"
