@@ -78,18 +78,14 @@ jobs:
 
       # セキュリティスキャン
       - name: Trivy scan
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: reviewdog/action-trivy@v1.14.0
         with:
-          scan-type: config
-          scan-ref: .
-          format: sarif
-          output: trivy.sarif
-          hide-progress: true
-          ignore-unfixed: true
-          severity: "CRITICAL,HIGH,MEDIUM"
-          exit-code: "1"
-
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: trivy.sarif
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          trivy_command: config
+          trivy_target: .
+          reporter: github-pr-review
+          filter_mode: diff_context
+          level: error
+          fail_level: any
+          trivy_flags: "--quiet --format json --severity CRITICAL,HIGH,MEDIUM --ignore-unfixed --no-progress"
+          trivy_version: "0.67.2"
