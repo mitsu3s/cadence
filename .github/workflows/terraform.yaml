@@ -11,6 +11,7 @@ on:
       - "**/*.tf"
       - "**/*.tfvars"
       - "modules/**"
+      - "terraform/.tflint.hcl"
       - ".github/workflows/terraform.yaml"
 
 permissions:
@@ -38,17 +39,26 @@ jobs:
       - name: Validate
         run: terraform validate
 
-      # GCP 向けルールで Lint
-      - name: TFLint
-        uses: devops-infra/action-tflint@v3
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6
         with:
-          tflint_rulesets: "google"
+          cache: true
 
-      # IaCセキュリティ
-      - name: Trivy
-        uses: aquasecurity/trivy-action@0.24.0
+      - name: TFLint init (install plugins)
+        run: tflint --init
+        env:
+          # GitHub API レート制限を回避するためにトークンを設定
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Run TFLint
+        run: tflint -f compact
+
+      # セキュリティスキャン
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           scan-type: config
+          scan-ref: .
           hide-progress: true
           ignore-unfixed: true
           severity: "CRITICAL,HIGH,MEDIUM"
