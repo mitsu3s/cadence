@@ -10,3 +10,10 @@ resource "google_project_iam_member" "cadence_firestore_user" {
   role    = "roles/datastore.user"
   member  = "serviceAccount:${google_service_account.cadence_run.email}" # 上で作成したサービスアカウントを指定
 }
+
+# Artifact Registry の権限付与
+resource "google_project_iam_member" "cadence_ar_reader" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${google_service_account.cadence_run.email}"
+}
