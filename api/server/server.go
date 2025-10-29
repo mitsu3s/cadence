@@ -7,6 +7,7 @@ import (
 	"github.com/mitsu3s/cadence/config"
 	"github.com/mitsu3s/cadence/handler"
 	"github.com/mitsu3s/cadence/logger"
+	"github.com/mitsu3s/cadence/store"
 )
 
 type Server struct {
@@ -15,13 +16,13 @@ type Server struct {
 	srv *http.Server
 }
 
-func New(cfg *config.Config) *Server {
+func New(cfg *config.Config, st store.Store) *Server {
 	mux := http.NewServeMux()
 
 	// リクエストのルーティングを設定
 	mux.HandleFunc("/", handler.Root)
 	mux.HandleFunc("/health", handler.Health)
-	mux.HandleFunc("/webhook/github", handler.GitHubWebhook(""))
+	mux.HandleFunc("/webhook/github", handler.GitHubWebhook(st))
 
 	return &Server{
 		cfg: cfg,

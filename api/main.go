@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/mitsu3s/cadence/config"
 	"github.com/mitsu3s/cadence/logger"
 	"github.com/mitsu3s/cadence/server"
+	"github.com/mitsu3s/cadence/store"
 )
 
 func main() {
@@ -21,9 +23,15 @@ func main() {
 		return
 	}
 
+	st, err := store.NewFirestore(context.Background())
+	if err != nil {
+		logger.LogErr("Failed to create Firestore client", err)
+		return
+	}
+
 	logger.LogInfo("Setup completed")
 
-	server := server.New(cfg)
+	server := server.New(cfg, st)
 	if err := server.ListenAndServe(); err != nil {
 		logger.LogErr("Server failed", err)
 		return
