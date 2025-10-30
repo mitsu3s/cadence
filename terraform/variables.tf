@@ -8,3 +8,14 @@ variable "region" {
   type        = string
   description = "Region for GCP resources"
 }
+
+variable "github_owner" {
+  type        = string
+  description = "GitHub repository owner"
+
+}
+
+variable "github_repo" {
+  type        = string
+  description = "GitHub repository name"
+}
