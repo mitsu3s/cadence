@@ -19,10 +19,10 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
 
   # Github の OIDC トークンを GCP の属性にマッピング
   attribute_mapping = {
-    "google.subject"        = "assertion.sub"
-    "attribute.actor"       = "assertion.actor"
-    "attribute.repository"  = "assertion.repository"
-    "attribute.ref"         = "assertion.ref"
+    "google.subject"       = "assertion.sub"
+    "attribute.actor"      = "assertion.actor"
+    "attribute.repository" = "assertion.repository"
+    "attribute.ref"        = "assertion.ref"
   }
 
   # アクセスできるリポジトリを制限
