@@ -19,3 +19,8 @@ variable "github_repo" {
   type        = string
   description = "GitHub repository name"
 }
+
+variable "project_number" {
+  type        = string
+  description = "Numeric Google project number"
+}
