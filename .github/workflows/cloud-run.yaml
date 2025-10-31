@@ -38,6 +38,7 @@ jobs:
         run: |
           TAG=${GITHUB_SHA}
           echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
+          echo "image_tag=$TAG" >> $GITHUB_OUTPUT
           echo "Generated image tag: $TAG"
 
       # GCP への認証 (Workload Identity Federation)
