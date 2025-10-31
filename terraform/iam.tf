@@ -43,3 +43,11 @@ resource "google_project_iam_member" "cadence_ci_ar_writer" {
   role    = "roles/artifactregistry.writer"
   member  = "serviceAccount:${google_service_account.cadence_ci.email}"
 }
+
+# Cloud Run 管理者権限
+# GitHub Actions 用のサービスアカウントに付与
+resource "google_project_iam_member" "cadence_ci_run_admin" {
+  project = var.project_id
+  role    = "roles/run.admin"
+  member  = "serviceAccount:${google_service_account.cadence_ci.email}"
+}
