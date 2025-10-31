@@ -1,4 +1,4 @@
-name: Push image
+name: Build & Push image
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  push-image:
+  build-and-push-image:
     runs-on: ubuntu-latest
 
     env:
