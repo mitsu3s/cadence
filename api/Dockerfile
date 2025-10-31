@@ -1,5 +1,5 @@
 # Step 1: build
-FROM golang:1.23 AS builder
+FROM golang:1.24 AS builder
 
 WORKDIR /app
 COPY . .
