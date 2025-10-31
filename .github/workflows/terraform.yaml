@@ -1,4 +1,4 @@
-name: Terraform CI
+name: Terraform Lint
 
 on:
   pull_request:
@@ -21,7 +21,7 @@ permissions:
   security-events: write
 
 jobs:
-  ci:
+  terraform-lint:
     name: Terraform Lint
     runs-on: ubuntu-latest
     steps:
