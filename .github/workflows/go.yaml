@@ -21,7 +21,7 @@ on:
       - "**.sum"
 
 jobs:
-  build:
+  go-build:
     name: Golang Build
     runs-on: ubuntu-latest
     defaults:
