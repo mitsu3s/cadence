@@ -24,3 +24,8 @@ variable "project_number" {
   type        = string
   description = "Numeric Google project number"
 }
+
+variable "image_tag" {
+  type        = string
+  description = "Container image tag to deploy"
+}
