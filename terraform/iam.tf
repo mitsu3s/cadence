@@ -54,8 +54,8 @@ resource "google_project_iam_member" "cadence_ci_run_admin" {
 
 # GCS を list する権限
 # GitHub Actions 用のサービスアカウントに付与
-resource "google_project_iam_member" "cadence_ci_storage_viewer" {
+resource "google_project_iam_member" "cadence_ci_storage_admin" {
   project = var.project_id
-  role    = "roles/storage.objectViewer"
+  role    = "roles/storage.objectAdmin"
   member  = "serviceAccount:${google_service_account.cadence_ci.email}"
 }
