@@ -8,6 +8,11 @@ terraform {
       version = "~> 6.0"
     }
   }
+
+  backend "gcs" {
+    bucket = "cadence-tf-state"
+    prefix = "terraform/state"
+  }
 }
 
 provider "google" {
