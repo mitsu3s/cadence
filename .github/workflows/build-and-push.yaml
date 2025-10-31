@@ -24,6 +24,9 @@ jobs:
       IMAGE_NAME: cadence-api # Cloud Run で動かしてるコンテナ名
       IMAGE_TAG: sha-${{ github.sha }}
 
+      DOCKERFILE: api/Dockerfile
+      BUILD_CONTEXT: ./api
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,7 +37,7 @@ jobs:
       - name: Generate image tag
         id: gen_tag
         run: |
-          TAG=${GITHUB_SHA::7}
+          TAG=${GITHUB_SHA}
           echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
           echo "Generated image tag: $TAG"
 
@@ -54,7 +57,7 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+          docker build -f ${{ env.DOCKERFILE }} -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.BUILD_CONTEXT }}
 
       - name: Push image
         run: |
