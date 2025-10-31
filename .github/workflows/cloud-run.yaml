@@ -22,7 +22,6 @@ jobs:
       REGION: asia-northeast1
       AR_REPO: cadence-repository # Artifact Registry の名前
       IMAGE_NAME: cadence-api # Cloud Run で動かしてるコンテナ名
-      IMAGE_TAG: sha-${{ github.sha }}
 
       DOCKERFILE: api/Dockerfile
       BUILD_CONTEXT: ./api
@@ -76,7 +75,6 @@ jobs:
       REGION: asia-northeast1
       SERVICE_NAME: cadence-api
       IMAGE_NAME: cadence-api
-      IMAGE_TAG: sha-${{ github.sha }}
 
     steps:
       - name: Authenticate to Google Cloud (WIF)
