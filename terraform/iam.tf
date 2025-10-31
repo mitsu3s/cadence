@@ -71,8 +71,8 @@ resource "google_project_iam_member" "actions_sa_admin" {
 
 # Workload Identity User 権限
 # GitHub IDグループに対しての Pool 単位での付与
-resource "google_project_iam_member" "actions_wip_user" {
+resource "google_project_iam_member" "actions_wip_admin" {
   project = var.project_id
-  role    = "roles/iam.workloadIdentityUser"
+  role    = "roles/iam.workloadIdentityPoolAdmin"
   member  = "principalSet://iam.googleapis.com/projects/${var.project_number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}/attribute.repository/${var.github_owner}/${var.github_repo}"
 }
