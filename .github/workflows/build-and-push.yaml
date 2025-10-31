@@ -1,0 +1,65 @@
+name: Build & Push image
+
+on:
+  workflow_dispatch:
+    # 手動でブランチを指定する
+    inputs:
+      branch:
+        description: "Build from this branch"
+        required: true
+        default: "main"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_ID: cadence-251018
+      REGION: asia-northeast1
+      AR_REPO: cadence-repository # Artifact Registry の名前
+      IMAGE_NAME: cadence-api # Cloud Run で動かしてるコンテナ名
+      IMAGE_TAG: sha-${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      # コミットハッシュからイメージタグを生成
+      - name: Generate image tag
+        id: gen_tag
+        run: |
+          TAG=${GITHUB_SHA::7}
+          echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
+          echo "Generated image tag: $TAG"
+
+      # GCP への認証 (Workload Identity Federation)
+      - name: Authenticate to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build image
+        run: |
+          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+
+      - name: Push image
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+      - name: Output tag
+        run: |
+          echo "Built and pushed image tag: ${{ env.IMAGE_TAG }}"

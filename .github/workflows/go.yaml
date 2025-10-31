@@ -21,7 +21,7 @@ on:
       - "**.sum"
 
 jobs:
-  build:
+  go-build:
     name: Golang Build
     runs-on: ubuntu-latest
     defaults:
@@ -43,11 +43,11 @@ jobs:
       - name: Build all
         run: go build ./...
 
-  test:
+  go-test:
     name: Golang Test
     runs-on: ubuntu-latest
     # ビルドが成功した場合にのみテストを実行
-    needs: [build]
+    needs: [go-build]
     defaults:
       run:
         working-directory: ./api
