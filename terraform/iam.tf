@@ -20,7 +20,6 @@ resource "google_project_iam_member" "cadence_ar_reader" {
   member  = "serviceAccount:${google_service_account.cadence_run.email}"
 }
 
-
 # GitHub Actions 用のサービスアカウント
 resource "google_service_account" "cadence_ci" {
   account_id   = "cadence-ci"
@@ -73,6 +72,12 @@ resource "google_project_iam_member" "cadence_ci_wip_admin" {
   project = var.project_id
   role    = "roles/iam.workloadIdentityPoolAdmin"
   member  = "serviceAccount:${google_service_account.cadence_ci.email}"
+}
+
+resource "google_service_account_iam_member" "cadence_ci_cloud_run" {
+  service_account_id = google_service_account.cadence_run.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.cadence_ci.email}"
 }
 
 # Workload Identity Federation の権限
