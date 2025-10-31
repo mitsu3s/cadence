@@ -56,27 +56,30 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -f ${{ env.DOCKERFILE }} -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.BUILD_CONTEXT }}
+          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${{ steps.gen_tag.outputs.image_tag }} .
 
       - name: Push image
         run: |
-          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${{ steps.gen_tag.outputs.image_tag }}
 
       - name: Output tag
         run: |
-          echo "Built and pushed image tag: ${{ env.IMAGE_TAG }}"
+          echo "Built and pushed image tag: ${{ steps.gen_tag.outputs.image_tag }}"
 
-  deploy-to-cloud-run:
+  deploy-with-terraform:
+    # ビルドとプッシュが完了してからデプロイを実行
     needs: build-and-push-image
     runs-on: ubuntu-latest
 
     env:
       PROJECT_ID: cadence-251018
       REGION: asia-northeast1
-      SERVICE_NAME: cadence-api
-      IMAGE_NAME: cadence-api
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 同じように GCP へ認証
       - name: Authenticate to Google Cloud (WIF)
         uses: google-github-actions/auth@v2
         with:
@@ -86,10 +89,17 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Deploy to Cloud Run
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        working-directory: ./terraform
+        run: terraform init -input=false
+
+      - name: Terraform apply
+        working-directory: ./terraform
         run: |
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/cadence-repository/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
-            --region=${{ env.REGION }} \
-            --platform=managed \
-            --quiet
+          terraform apply -input=false -auto-approve \
+            -var="project_id=${{ env.PROJECT_ID }}" \
+            -var="region=${{ env.REGION }}" \
+            -var="image_tag=${{ needs.build-and-push-image.outputs.image_tag }}"
