@@ -26,6 +26,6 @@ variable "project_number" {
 }
 
 variable "image_tag" {
-  type    = string
+  type        = string
   description = "Container image tag to deploy"
 }
