@@ -59,6 +59,14 @@ resource "google_project_iam_member" "cadence_ci_sa_admin" {
   member  = "serviceAccount:${google_service_account.cadence_ci.email}"
 }
 
+# Project IAM Admin 権限
+# GitHub Actions 用のサービスアカウントに付与
+resource "google_project_iam_member" "cadence_ci_pj_iam_admin" {
+  project = var.project_id
+  role    = "roles/resourcemanager.projectIamAdmin"
+  member  = "serviceAccount:${google_service_account.cadence_ci.email}"
+}
+
 # Workload Identity の Admin 権限
 # GitHub Actions 用のサービスアカウントに付与
 resource "google_project_iam_member" "cadence_ci_wip_admin" {
