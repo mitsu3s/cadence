@@ -16,6 +16,8 @@ permissions:
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.gen_tag.outputs.image_tag }}
 
     env:
       PROJECT_ID: cadence-251018
