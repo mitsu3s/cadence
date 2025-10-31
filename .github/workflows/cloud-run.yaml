@@ -56,7 +56,7 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${{ steps.gen_tag.outputs.image_tag }} .
+          docker build -f ${{ env.DOCKERFILE }} -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/${{ env.IMAGE_NAME }}:${{ steps.gen_tag.outputs.image_tag }} ${{ env.BUILD_CONTEXT }}
 
       - name: Push image
         run: |
