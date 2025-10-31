@@ -51,6 +51,21 @@ resource "google_project_iam_member" "cadence_ci_storage_admin" {
   member  = "serviceAccount:${google_service_account.cadence_ci.email}"
 }
 
+# Service Account の Admin 権限
+# GitHub Actions 用のサービスアカウントに付与
+resource "google_project_iam_member" "cadence_ci_sa_admin" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountAdmin"
+  member  = "serviceAccount:${google_service_account.cadence_ci.email}"
+}
+
+# Workload Identity の Admin 権限
+# GitHub Actions 用のサービスアカウントに付与
+resource "google_project_iam_member" "cadence_ci_wip_admin" {
+  project = var.project_id
+  role    = "roles/iam.workloadIdentityPoolAdmin"
+  member  = "serviceAccount:${google_service_account.cadence_ci.email}"
+}
 
 # Workload Identity Federation の権限
 # GitHub Actions からのアクセスを許可するための設定
@@ -69,7 +84,7 @@ resource "google_project_iam_member" "actions_sa_admin" {
   member  = "principalSet://iam.googleapis.com/projects/${var.project_number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}/attribute.repository/${var.github_owner}/${var.github_repo}"
 }
 
-# Workload Identity User 権限
+# Workload Identity の Admin 権限
 # GitHub IDグループに対しての Pool 単位での付与
 resource "google_project_iam_member" "actions_wip_admin" {
   project = var.project_id
