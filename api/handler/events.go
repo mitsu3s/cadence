@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -37,6 +38,7 @@ func ListEvents(st store.Store) http.HandlerFunc {
 			Limit: limit,
 		})
 		if err != nil {
+			log.Printf("list events error: %+v", err)
 			http.Error(w, "failed to list events", http.StatusInternalServerError)
 			return
 		}
