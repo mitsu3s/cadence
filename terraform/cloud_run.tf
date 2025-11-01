@@ -12,6 +12,11 @@ resource "google_cloud_run_service" "cadence_api" {
         ports {
           container_port = 8080
         }
+
+        env {
+          name  = "GOOGLE_CLOUD_PROJECT"
+          value = var.project_id
+        }
       }
     }
   }
