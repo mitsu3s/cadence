@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/mitsu3s/cadence/logger"
 	"github.com/mitsu3s/cadence/model"
 
 	"cloud.google.com/go/firestore"
@@ -49,6 +50,8 @@ func (s *fireStore) SaveEvent(ctx context.Context, ev model.Event) error {
 func (s *fireStore) ListEvents(ctx context.Context, query EventQuery) ([]model.Event, error) {
 	col := s.client.Collection("events")
 	fireStoreQuery := col.Query
+
+	logger.LogInfo("Querying events", "repo", query.Repo, "type", query.Type, "since", query.Since, "limit", query.Limit)
 
 	// クエリパラメータに応じてフィルタリング
 	if query.Repo != "" {
