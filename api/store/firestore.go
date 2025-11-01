@@ -46,14 +46,31 @@ func (s *fireStore) SaveEvent(ctx context.Context, ev model.Event) error {
 	return err
 }
 
-func (s *fireStore) ListEvents(ctx context.Context, limit int) ([]model.Event, error) {
+func (s *fireStore) ListEvents(ctx context.Context, query EventQuery) ([]model.Event, error) {
+	col := s.client.Collection("events")
+	fireStoreQuery := col.Query
+
+	// クエリパラメータに応じてフィルタリング
+	if query.Repo != "" {
+		fireStoreQuery = fireStoreQuery.Where("repository", "==", query.Repo)
+	}
+	if query.Type != "" {
+		fireStoreQuery = fireStoreQuery.Where("type", "==", query.Type)
+	}
+	if !query.Since.IsZero() {
+		fireStoreQuery = fireStoreQuery.Where("received_at", ">=", query.Since)
+	}
+
+	fireStoreQuery = fireStoreQuery.OrderBy("received_at", firestore.Desc)
+
+	limit := query.Limit
+	if limit <= 0 || limit > 200 {
+		limit = 20
+	}
+	fireStoreQuery = fireStoreQuery.Limit(limit)
+
 	// events コレクションから受信日時の降順で limit 件取得
-	docs, err := s.client.
-		Collection("events").
-		OrderBy("received_at", firestore.Desc).
-		Limit(limit).
-		Documents(ctx).
-		GetAll()
+	docs, err := fireStoreQuery.Documents(ctx).GetAll()
 	if err != nil {
 		return nil, err
 	}

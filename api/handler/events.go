@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/mitsu3s/cadence/store"
 )
@@ -18,7 +19,23 @@ func ListEvents(st store.Store) http.HandlerFunc {
 			}
 		}
 
-		events, err := st.ListEvents(r.Context(), limit)
+		repo := r.URL.Query().Get("repo")
+		evType := r.URL.Query().Get("type")
+
+		var sinceStr time.Time
+		if since := r.URL.Query().Get("since"); since != "" {
+			parsedSince, err := time.Parse(time.RFC3339, since)
+			if err == nil {
+				sinceStr = parsedSince
+			}
+		}
+
+		events, err := st.ListEvents(r.Context(), store.EventQuery{
+			Repo:  repo,
+			Type:  evType,
+			Since: sinceStr,
+			Limit: limit,
+		})
 		if err != nil {
 			http.Error(w, "failed to list events", http.StatusInternalServerError)
 			return
