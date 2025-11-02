@@ -23,6 +23,7 @@ func New(cfg *config.Config, st store.Store) *Server {
 	mux.HandleFunc("/", handler.Root)
 	mux.HandleFunc("/health", handler.Health)
 	mux.HandleFunc("/webhook/github", handler.GitHubWebhook(st))
+	mux.HandleFunc("/events", handler.ListEvents(st))
 
 	return &Server{
 		cfg: cfg,
