@@ -63,12 +63,15 @@ func (s *fireStore) ListEvents(ctx context.Context, query EventQuery) ([]model.E
 	if !query.Since.IsZero() {
 		fireStoreQuery = fireStoreQuery.Where("received_at", ">=", query.Since)
 	}
+	if !query.Until.IsZero() {
+		fireStoreQuery = fireStoreQuery.Where("received_at", "<=", query.Until)
+	}
 
 	fireStoreQuery = fireStoreQuery.OrderBy("received_at", firestore.Desc)
 
 	limit := query.Limit
-	if limit <= 0 || limit > 200 {
-		limit = 20
+	if limit <= 0 || limit > 500 {
+		limit = 200 // 集計なので少し多め
 	}
 	fireStoreQuery = fireStoreQuery.Limit(limit)
 
