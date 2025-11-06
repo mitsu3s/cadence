@@ -11,6 +11,7 @@ type EventQuery struct {
 	Repo  string
 	Type  string
 	Since time.Time
+	Until time.Time
 	Limit int
 }
 
