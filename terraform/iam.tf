@@ -20,6 +20,23 @@ resource "google_project_iam_member" "cadence_ar_reader" {
   member  = "serviceAccount:${google_service_account.cadence_run.email}"
 }
 
+# Publisher の権限
+# Cloud Run の サービスアカウントに付与（将来的には Webhook 用の別サービスアカウントに分ける）
+resource "google_project_iam_member" "cadence_receiver_pubsub" {
+  project = var.project_id
+  role    = "roles/pubsub.publisher"
+  member  = "serviceAccount:${google_service_account.cadence_run.email}"
+}
+
+# Subscriber の権限
+# Cloud Run の サービスアカウントに付与（将来的には Processor 用の別サービスアカウントに分ける）
+resource "google_project_iam_member" "cadence_processor_pubsub" {
+  project = var.project_id
+  role    = "roles/pubsub.subscriber"
+  member  = "serviceAccount:${google_service_account.cadence_run.email}"
+}
+
+
 # GitHub Actions 用のサービスアカウント
 resource "google_service_account" "cadence_ci" {
   account_id   = "cadence-ci"

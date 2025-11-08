@@ -29,3 +29,13 @@ variable "image_tag" {
   type        = string
   description = "Container image tag to deploy"
 }
+
+variable "receiver_image_tag" {
+  type        = string
+  description = "Container image tag for cadence receiver"
+}
+
+variable "processor_image_tag" {
+  type        = string
+  description = "Container image tag for cadence processor"
+}
