@@ -22,7 +22,6 @@ type pubsubEnvelope struct {
 }
 
 // 受け取る payload（receiver から publish される想定）
-// まずは PR だけ。
 type prPayload struct {
 	Action     string `json:"action"`
 	Repository struct {
@@ -31,7 +30,6 @@ type prPayload struct {
 	PullRequest struct {
 		Title string `json:"title"`
 	} `json:"pull_request"`
-	// 必要なら GitHub Delivery ID を attributes で渡してもOK
 }
 
 func PubSub(st store.Store) http.HandlerFunc {
