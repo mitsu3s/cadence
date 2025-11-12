@@ -39,7 +39,7 @@ func StatsDaily(st store.Store) http.HandlerFunc {
 
 		// 今を基準に期間を決める
 		now := time.Now().UTC()
-		from := now.AddDate(0, 0, -days)
+		from := now.AddDate(0, 0, -days+1)
 
 		events, err := st.ListEvents(r.Context(), store.EventQuery{
 			Repo:  repo,
