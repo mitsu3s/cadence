@@ -21,7 +21,7 @@ func New(cfg *config.Config, topic *pubsub.Topic) *Server {
 
 	// リクエストのルーティングを設定
 	mux.HandleFunc("/health", handler.Health)
-	mux.HandleFunc("/webhook/github", handler.GitHubWebhook(topic))
+	mux.HandleFunc("/webhook/github", handler.GitHubWebhook(topic, cfg))
 
 	return &Server{
 		cfg: cfg,
