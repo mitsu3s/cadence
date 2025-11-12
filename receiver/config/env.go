@@ -7,9 +7,12 @@ import (
 
 // Config is a struct for environment variables.
 type Config struct {
-	Port         string
-	ProjectID    string
-	CadenceTopic string
+	Port                string
+	ProjectID           string
+	CadenceTopic        string
+	GitHubAppID         string
+	GitHubAppPrivateKey string
+	GitHubWebhookSecret string
 }
 
 // Get gets a value from environment variables.
@@ -26,6 +29,9 @@ func Get() (*Config, error) {
 		{&cfg.Port, "PORT"},
 		{&cfg.ProjectID, "PROJECT_ID"},
 		{&cfg.CadenceTopic, "CADENCE_TOPIC"},
+		{&cfg.GitHubAppID, "GITHUB_APP_ID"},
+		{&cfg.GitHubAppPrivateKey, "GITHUB_APP_PRIVATE_KEY"},
+		{&cfg.GitHubWebhookSecret, "GITHUB_WEBHOOK_SECRET"},
 	} {
 		v := os.Getenv(prop.name)
 		*prop.field = v
