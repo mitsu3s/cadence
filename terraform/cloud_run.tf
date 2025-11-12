@@ -67,6 +67,36 @@ resource "google_cloud_run_service" "cadence_receiver" {
           name  = "CADENCE_TOPIC"
           value = google_pubsub_topic.cadence_events.name
         }
+
+        env {
+          name = "GITHUB_APP_ID"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.github_app_id.secret_id
+              key  = "latest" # 最新版を使う
+            }
+          }
+        }
+
+        env {
+          name = "GITHUB_APP_PRIVATE_KEY"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.github_app_private_key.secret_id
+              key  = "latest" # 最新版を使う
+            }
+          }
+        }
+
+        env {
+          name = "GITHUB_WEBHOOK_SECRET"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.github_webhook_secret.secret_id
+              key  = "latest" # 最新版を使う
+            }
+          }
+        }
       }
     }
   }
