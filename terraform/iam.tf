@@ -36,6 +36,30 @@ resource "google_project_iam_member" "cadence_processor_pubsub" {
   member  = "serviceAccount:${google_service_account.cadence_run.email}"
 }
 
+# Secret Manager の App ID 読み取り権限
+# Cloud Run の サービスアカウントに付与
+resource "google_secret_manager_secret_iam_member" "receiver_can_read_app_id" {
+  secret_id = google_secret_manager_secret.github_app_id.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.cadence_run.email}"
+}
+
+# Secret Manager の Private Key 読み取り権限
+# Cloud Run の サービスアカウントに付与
+resource "google_secret_manager_secret_iam_member" "receiver_can_read_private_key" {
+  secret_id = google_secret_manager_secret.github_app_private_key.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.cadence_run.email}"
+}
+
+# Secret Manager の Webhook Secret 読み取り権限
+# Cloud Run の サービスアカウントに付与
+resource "google_secret_manager_secret_iam_member" "receiver_can_read_webhook_secret" {
+  secret_id = google_secret_manager_secret.github_webhook_secret.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.cadence_run.email}"
+}
+
 
 # GitHub Actions 用のサービスアカウント
 resource "google_service_account" "cadence_ci" {
