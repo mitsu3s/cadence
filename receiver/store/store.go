@@ -18,5 +18,7 @@ type EventQuery struct {
 type Store interface {
 	SaveEvent(ctx context.Context, ev model.Event) error
 	ListEvents(ctx context.Context, query EventQuery) ([]model.Event, error)
+	SaveInstallation(ctx context.Context, inst model.Installation) error
+	UpdateInstallationRepositories(ctx context.Context, installationID int64, added []string, removed []string) error
 	Close() error
 }
