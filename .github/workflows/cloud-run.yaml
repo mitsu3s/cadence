@@ -2,6 +2,15 @@ name: Cloud Run CI/CD
 
 on:
   workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to deploy'
+        required: true
+        type: choice
+        options:
+          - api
+          - processor
+          - receiver
 
 permissions:
   id-token: write
@@ -17,10 +26,10 @@ jobs:
       PROJECT_ID: cadence-251018
       REGION: asia-northeast1
       AR_REPO: cadence-repository # Artifact Registry の名前
-      IMAGE_NAME: cadence-api # Cloud Run で動かしてるコンテナ名
+      IMAGE_NAME: cadence-${{ github.event.inputs.service }}  # 引数でサービス名を受け取る
 
-      DOCKERFILE: api/Dockerfile
-      BUILD_CONTEXT: ./api
+      DOCKERFILE: ${{ github.event.inputs.service }}/Dockerfile
+      BUILD_CONTEXT: ./${{ github.event.inputs.service }}
 
     steps:
       - name: Checkout
