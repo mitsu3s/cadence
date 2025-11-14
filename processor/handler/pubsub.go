@@ -3,11 +3,11 @@ package handler
 import (
 	"encoding/base64"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/mitsu3s/cadence/logger"
 	"github.com/mitsu3s/cadence/model"
 	"github.com/mitsu3s/cadence/store"
 )
@@ -107,7 +107,7 @@ func PubSub(st store.Store) http.HandlerFunc {
 			}
 
 			if err := st.SaveEvent(r.Context(), ev); err != nil {
-				log.Printf("processor save error: %v", err)
+				logger.LogErr("processor save event failed", "error", err)
 				http.Error(w, "save failed", http.StatusInternalServerError)
 				return
 			}
@@ -116,7 +116,7 @@ func PubSub(st store.Store) http.HandlerFunc {
 			// インストール全体のスナップショット
 			var p installationPayload
 			if err := json.Unmarshal(raw, &p); err != nil {
-				log.Printf("bad installation payload: %v", err)
+				logger.LogErr("bad installation payload", "error", err)
 				http.Error(w, "bad payload", http.StatusBadRequest)
 				return
 			}
@@ -148,7 +148,7 @@ func PubSub(st store.Store) http.HandlerFunc {
 			}
 
 			if err := st.SaveInstallation(r.Context(), inst); err != nil {
-				log.Printf("save installation error: %v", err)
+				logger.LogErr("save installation error", "error", err)
 				http.Error(w, "save installation failed", http.StatusInternalServerError)
 				return
 			}
@@ -157,7 +157,7 @@ func PubSub(st store.Store) http.HandlerFunc {
 			// 対象リポジトリの追加・削除
 			var p installationRepositoriesPayload
 			if err := json.Unmarshal(raw, &p); err != nil {
-				log.Printf("bad installation_repos payload: %v", err)
+				logger.LogErr("bad installation_repos payload", "error", err)
 				http.Error(w, "bad payload", http.StatusBadRequest)
 				return
 			}
@@ -180,20 +180,20 @@ func PubSub(st store.Store) http.HandlerFunc {
 			}
 
 			if instID == 0 {
-				log.Printf("installation_repositories missing installation id")
+				logger.LogErr("installation_repositories missing installation id")
 				http.Error(w, "missing installation id", http.StatusBadRequest)
 				return
 			}
 
 			if err := st.UpdateInstallationRepositories(r.Context(), instID, added, removed); err != nil {
-				log.Printf("update installation repos error: %v", err)
+				logger.LogErr("update installation repos error", "error", err)
 				http.Error(w, "update installation repos failed", http.StatusInternalServerError)
 				return
 			}
 
 		default:
 			// それ以外のイベントは当面ログだけ
-			log.Printf("processor ignore event=%q delivery=%q", event, delivery)
+			logger.LogErr("processor ignore event", "event", event, "delivery", delivery)
 		}
 
 		w.WriteHeader(http.StatusOK)
