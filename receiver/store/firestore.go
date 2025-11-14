@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/mitsu3s/cadence/logger"
 	"github.com/mitsu3s/cadence/model"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"cloud.google.com/go/firestore"
 )
@@ -92,6 +95,78 @@ func (s *fireStore) ListEvents(ctx context.Context, query EventQuery) ([]model.E
 	}
 
 	return events, nil
+}
+
+func (s *fireStore) SaveInstallation(ctx context.Context, inst model.Installation) error {
+	if inst.ID == 0 {
+		return fmt.Errorf("installation ID is required")
+	}
+
+	if inst.UpdatedAt.IsZero() {
+		inst.UpdatedAt = time.Now()
+	}
+
+	// installations コレクションに保存
+	docID := strconv.FormatInt(inst.ID, 10)
+	_, err := s.client.Collection("installations").Doc(docID).Set(ctx, inst)
+
+	return err
+}
+
+func (s *fireStore) UpdateInstallationRepos(ctx context.Context, installationID int64, added []string, removed []string) error {
+	if installationID == 0 {
+		return fmt.Errorf("installation ID is required")
+	}
+
+	docID := strconv.FormatInt(installationID, 10)
+	docRef := s.client.Collection("installations").Doc(docID)
+
+	updates := []firestore.Update{}
+
+	if len(added) > 0 {
+		// repositories フィールドに重複なしで追加
+		vals := make([]interface{}, 0, len(added))
+		for _, r := range added {
+			vals = append(vals, r)
+		}
+		updates = append(updates, firestore.Update{
+			Path:  "repositories",
+			Value: firestore.ArrayUnion(vals...),
+		})
+	}
+
+	if len(removed) > 0 {
+		// repositories から削除
+		vals := make([]interface{}, 0, len(removed))
+		for _, r := range removed {
+			vals = append(vals, r)
+		}
+		updates = append(updates, firestore.Update{
+			Path:  "repositories",
+			Value: firestore.ArrayRemove(vals...),
+		})
+	}
+
+	if len(updates) == 0 {
+		// 何も変更ないなら何もしない
+		return nil
+	}
+
+	// updated_at もついでに更新しておく
+	updates = append(updates, firestore.Update{
+		Path:  "updated_at",
+		Value: time.Now(),
+	})
+
+	_, err := docRef.Update(ctx, updates)
+	if err != nil {
+		// Firestore のドキュメントが存在しない場合
+		if status.Code(err) == codes.NotFound {
+			return fmt.Errorf("installation %d not found", installationID)
+		}
+		return err
+	}
+	return nil
 }
 
 func (s *fireStore) Close() error {
