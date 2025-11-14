@@ -3,10 +3,11 @@ package handler
 import (
 	"encoding/base64"
 	"encoding/json"
-	"log"
 	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/mitsu3s/cadence/logger"
 	"github.com/mitsu3s/cadence/model"
 	"github.com/mitsu3s/cadence/store"
 )
@@ -32,6 +33,37 @@ type prPayload struct {
 	} `json:"pull_request"`
 }
 
+// 既存の prPayload はそのままにして、下を追加
+
+// installation.created / deleted 用
+type installationPayload struct {
+	Action       string `json:"action"` // "created", "deleted", ...
+	Installation struct {
+		ID      int64 `json:"id"`
+		Account struct {
+			Login string `json:"login"` // "owner"
+			Type  string `json:"type"`  // "User" or "Organization"
+		} `json:"account"`
+	} `json:"installation"`
+	Repositories []struct {
+		FullName string `json:"full_name"` // "owner/name"
+	} `json:"repositories"`
+}
+
+// installation_repositories.added / removed 用
+type installationRepositoriesPayload struct {
+	Action       string `json:"action"` // "added" or "removed"
+	Installation struct {
+		ID int64 `json:"id"`
+	} `json:"installation"`
+	RepositoriesAdded []struct {
+		FullName string `json:"full_name"`
+	} `json:"repositories_added"`
+	RepositoriesRemoved []struct {
+		FullName string `json:"full_name"`
+	} `json:"repositories_removed"`
+}
+
 func PubSub(st store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
@@ -49,30 +81,119 @@ func PubSub(st store.Store) http.HandlerFunc {
 			return
 		}
 
-		// まずは PR だけを扱う（attributesで type=pr などを付けてくる想定でもOK）
-		var p prPayload
-		_ = json.Unmarshal(raw, &p) // 失敗しても落とさない（raw保存は後で）
+		event := env.Message.Attributes["event"]       // "pull_request", "installation", ...
+		delivery := env.Message.Attributes["delivery"] // 冪等キー
+		instIDStr := env.Message.Attributes["installation_id"]
 
-		// 冪等性: GitHub の Delivery ID を attributes に載せる想定
-		id := env.Message.MessageID
-		if d, ok := env.Message.Attributes["delivery"]; ok && d != "" {
-			id = d
-		}
+		switch event {
+		case "pull_request":
+			var p prPayload
+			_ = json.Unmarshal(raw, &p) // 失敗しても落とさない（raw保存は後で）
 
-		ev := model.Event{
-			ID:         id,
-			Type:       "pull_request",
-			Repository: p.Repository.FullName,
-			Action:     p.Action,
-			Title:      p.PullRequest.Title,
-			CreatedAt:  time.Now(), // 後でpayload由来に修正可
-			ReceivedAt: time.Now(),
-		}
+			// 冪等性: GitHub の Delivery ID を attributes に載せる想定
+			id := env.Message.MessageID
+			if d, ok := env.Message.Attributes["delivery"]; ok && d != "" {
+				id = d
+			}
 
-		if err := st.SaveEvent(r.Context(), ev); err != nil {
-			log.Printf("processor save error: %v", err)
-			http.Error(w, "save failed", http.StatusInternalServerError)
-			return
+			ev := model.Event{
+				ID:         id,
+				Type:       "pull_request",
+				Repository: p.Repository.FullName,
+				Action:     p.Action,
+				Title:      p.PullRequest.Title,
+				CreatedAt:  time.Now(), // 後でpayload由来に修正可
+				ReceivedAt: time.Now(),
+			}
+
+			if err := st.SaveEvent(r.Context(), ev); err != nil {
+				logger.LogErr("processor save event failed", "error", err)
+				http.Error(w, "save failed", http.StatusInternalServerError)
+				return
+			}
+
+		case "installation":
+			// インストール全体のスナップショット
+			var p installationPayload
+			if err := json.Unmarshal(raw, &p); err != nil {
+				logger.LogErr("bad installation payload", "error", err)
+				http.Error(w, "bad payload", http.StatusBadRequest)
+				return
+			}
+
+			inst := model.Installation{
+				ID:           p.Installation.ID,
+				AccountLogin: p.Installation.Account.Login,
+				AccountType:  p.Installation.Account.Type,
+				UpdatedAt:    time.Now(),
+				// Active / DeletedAt は action に応じてセット
+			}
+
+			// repositories を "owner/name" の配列に変換
+			for _, rinfo := range p.Repositories {
+				inst.Repositories = append(inst.Repositories, rinfo.FullName)
+			}
+
+			// action に応じて Active フラグなどを決める
+			switch p.Action {
+			case "created":
+				inst.Active = true
+				inst.DeletedAt = time.Time{}
+			case "deleted":
+				inst.Active = false
+				inst.DeletedAt = time.Now()
+			default:
+				// "suspend" などあれば後で拡張
+				inst.Active = true
+			}
+
+			if err := st.SaveInstallation(r.Context(), inst); err != nil {
+				logger.LogErr("save installation error", "error", err)
+				http.Error(w, "save installation failed", http.StatusInternalServerError)
+				return
+			}
+
+		case "installation_repositories":
+			// 対象リポジトリの追加・削除
+			var p installationRepositoriesPayload
+			if err := json.Unmarshal(raw, &p); err != nil {
+				logger.LogErr("bad installation_repos payload", "error", err)
+				http.Error(w, "bad payload", http.StatusBadRequest)
+				return
+			}
+
+			var added, removed []string
+			for _, rinfo := range p.RepositoriesAdded {
+				added = append(added, rinfo.FullName)
+			}
+			for _, rinfo := range p.RepositoriesRemoved {
+				removed = append(removed, rinfo.FullName)
+			}
+
+			// installation ID は payload から取るのが本筋
+			instID := p.Installation.ID
+			// 念のため attributes に入っていたらそれを優先
+			if instID == 0 && instIDStr != "" {
+				if v, err := strconv.ParseInt(instIDStr, 10, 64); err == nil {
+					instID = v
+				}
+			}
+
+			if instID == 0 {
+				logger.LogErr("installation_repositories missing installation id")
+				http.Error(w, "missing installation id", http.StatusBadRequest)
+				return
+			}
+
+			if err := st.UpdateInstallationRepositories(r.Context(), instID, added, removed); err != nil {
+				logger.LogErr("update installation repos error", "error", err)
+				http.Error(w, "update installation repos failed", http.StatusInternalServerError)
+				return
+			}
+
+		default:
+			// それ以外のイベントは当面ログだけ
+			logger.LogErr("processor ignore event", "event", event, "delivery", delivery)
 		}
 
 		w.WriteHeader(http.StatusOK)
