@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/mitsu3s/cadence/model"
@@ -152,6 +153,47 @@ func PubSub(st store.Store) http.HandlerFunc {
 				return
 			}
 
+		case "installation_repositories":
+			// 対象リポジトリの追加・削除
+			var p installationRepositoriesPayload
+			if err := json.Unmarshal(raw, &p); err != nil {
+				log.Printf("bad installation_repos payload: %v", err)
+				http.Error(w, "bad payload", http.StatusBadRequest)
+				return
+			}
+
+			var added, removed []string
+			for _, rinfo := range p.RepositoriesAdded {
+				added = append(added, rinfo.FullName)
+			}
+			for _, rinfo := range p.RepositoriesRemoved {
+				removed = append(removed, rinfo.FullName)
+			}
+
+			// installation ID は payload から取るのが本筋
+			instID := p.Installation.ID
+			// 念のため attributes に入っていたらそれを優先
+			if instID == 0 && instIDStr != "" {
+				if v, err := strconv.ParseInt(instIDStr, 10, 64); err == nil {
+					instID = v
+				}
+			}
+
+			if instID == 0 {
+				log.Printf("installation_repositories missing installation id")
+				http.Error(w, "missing installation id", http.StatusBadRequest)
+				return
+			}
+
+			if err := st.UpdateInstallationRepositories(r.Context(), instID, added, removed); err != nil {
+				log.Printf("update installation repos error: %v", err)
+				http.Error(w, "update installation repos failed", http.StatusInternalServerError)
+				return
+			}
+
+		default:
+			// それ以外のイベントは当面ログだけ
+			log.Printf("processor ignore event=%q delivery=%q", event, delivery)
 		}
 
 		w.WriteHeader(http.StatusOK)
