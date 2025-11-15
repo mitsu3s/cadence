@@ -40,21 +40,27 @@ variable "processor_image_tag" {
   description = "Container image tag for cadence processor"
 }
 
-
 variable "github_app_id" {
-  description = "GitHub App ID"
   type        = string
+  description = "GitHub App ID"
   sensitive   = true
 }
 
 variable "github_app_private_key" {
-  description = "GitHub App private key"
   type        = string
+  description = "GitHub App private key"
   sensitive   = true
 }
 
 variable "github_webhook_secret" {
-  description = "GitHub Webhook secret used for signature verification"
   type        = string
+  description = "GitHub Webhook secret used for signature verification"
   sensitive   = true
+}
+
+variable "slack_webhook_url" {
+  type        = string
+  description = "Slack Webhook URL for sending notifications"
+  sensitive   = true
+
 }
