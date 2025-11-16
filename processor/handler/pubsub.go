@@ -66,10 +66,17 @@ type installationRepositoriesPayload struct {
 
 func PubSub(st store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 		defer r.Body.Close()
 
 		var env pubsubEnvelope
 		if err := json.NewDecoder(r.Body).Decode(&env); err != nil {
+			logger.LogErr("processor pubsub decode error",
+				"component", "processor",
+				"operation", "PubSub",
+				"status", "error",
+				"error", err,
+			)
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
@@ -77,6 +84,12 @@ func PubSub(st store.Store) http.HandlerFunc {
 		// base64 デコード
 		raw, err := base64.StdEncoding.DecodeString(env.Message.Data)
 		if err != nil {
+			logger.LogErr("processor pubsub base64 decode error",
+				"component", "processor",
+				"operation", "PubSub",
+				"status", "error",
+				"error", err,
+			)
 			http.Error(w, "bad data", http.StatusBadRequest)
 			return
 		}
@@ -107,16 +120,42 @@ func PubSub(st store.Store) http.HandlerFunc {
 			}
 
 			if err := st.SaveEvent(r.Context(), ev); err != nil {
-				logger.LogErr("processor save event failed", "error", err)
+				latency := time.Since(start).Milliseconds()
+				logger.LogErr("processor save event failed",
+					"component", "processor",
+					"operation", "SaveEvent",
+					"status", "error",
+					"delivery", delivery,
+					"repo", p.Repository.FullName,
+					"latency_ms", latency,
+					"error", err,
+				)
 				http.Error(w, "save failed", http.StatusInternalServerError)
 				return
 			}
+
+			latency := time.Since(start).Milliseconds()
+			logger.LogInfo("processor save event ok",
+				"component", "processor",
+				"operation", "SaveEvent",
+				"status", "ok",
+				"delivery", delivery,
+				"repo", p.Repository.FullName,
+				"latency_ms", latency,
+			)
 
 		case "installation":
 			// インストール全体のスナップショット
 			var p installationPayload
 			if err := json.Unmarshal(raw, &p); err != nil {
-				logger.LogErr("bad installation payload", "error", err)
+				logger.LogErr("bad installation payload",
+					"component", "processor",
+					"operation", "SaveInstallation",
+					"status", "error",
+					"event", event,
+					"delivery", delivery,
+					"error", err,
+				)
 				http.Error(w, "bad payload", http.StatusBadRequest)
 				return
 			}
@@ -126,7 +165,6 @@ func PubSub(st store.Store) http.HandlerFunc {
 				AccountLogin: p.Installation.Account.Login,
 				AccountType:  p.Installation.Account.Type,
 				UpdatedAt:    time.Now(),
-				// Active / DeletedAt は action に応じてセット
 			}
 
 			// repositories を "owner/name" の配列に変換
@@ -148,16 +186,40 @@ func PubSub(st store.Store) http.HandlerFunc {
 			}
 
 			if err := st.SaveInstallation(r.Context(), inst); err != nil {
-				logger.LogErr("save installation error", "error", err)
+				latency := time.Since(start).Milliseconds()
+				logger.LogErr("save installation error",
+					"component", "processor",
+					"operation", "SaveInstallation",
+					"status", "error",
+					"installation_id", inst.ID,
+					"latency_ms", latency,
+					"error", err,
+				)
 				http.Error(w, "save installation failed", http.StatusInternalServerError)
 				return
 			}
+
+			latency := time.Since(start).Milliseconds()
+			logger.LogInfo("save installation ok",
+				"component", "processor",
+				"operation", "SaveInstallation",
+				"status", "ok",
+				"installation_id", inst.ID,
+				"latency_ms", latency,
+			)
 
 		case "installation_repositories":
 			// 対象リポジトリの追加・削除
 			var p installationRepositoriesPayload
 			if err := json.Unmarshal(raw, &p); err != nil {
-				logger.LogErr("bad installation_repos payload", "error", err)
+				logger.LogErr("bad installation_repos payload",
+					"component", "processor",
+					"operation", "UpdateInstallationRepos",
+					"status", "error",
+					"event", event,
+					"delivery", delivery,
+					"error", err,
+				)
 				http.Error(w, "bad payload", http.StatusBadRequest)
 				return
 			}
@@ -180,20 +242,49 @@ func PubSub(st store.Store) http.HandlerFunc {
 			}
 
 			if instID == 0 {
-				logger.LogErr("installation_repositories missing installation id")
+				logger.LogErr("installation_repositories missing installation id",
+					"component", "processor",
+					"operation", "UpdateInstallationRepos",
+					"status", "error",
+					"event", event,
+					"delivery", delivery,
+				)
 				http.Error(w, "missing installation id", http.StatusBadRequest)
 				return
 			}
 
 			if err := st.UpdateInstallationRepositories(r.Context(), instID, added, removed); err != nil {
-				logger.LogErr("update installation repos error", "error", err)
+				latency := time.Since(start).Milliseconds()
+				logger.LogErr("update installation repos error",
+					"component", "processor",
+					"operation", "UpdateInstallationRepos",
+					"status", "error",
+					"installation_id", instID,
+					"latency_ms", latency,
+					"error", err,
+				)
 				http.Error(w, "update installation repos failed", http.StatusInternalServerError)
 				return
 			}
 
+			latency := time.Since(start).Milliseconds()
+			logger.LogInfo("update installation repos ok",
+				"component", "processor",
+				"operation", "UpdateInstallationRepos",
+				"status", "ok",
+				"installation_id", instID,
+				"latency_ms", latency,
+			)
+
 		default:
 			// それ以外のイベントは当面ログだけ
-			logger.LogErr("processor ignore event", "event", event, "delivery", delivery)
+			logger.LogInfo("processor ignore event",
+				"component", "processor",
+				"operation", "IgnoreEvent",
+				"status", "ok",
+				"event", event,
+				"delivery", delivery,
+			)
 		}
 
 		w.WriteHeader(http.StatusOK)
