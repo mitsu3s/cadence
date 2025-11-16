@@ -3,6 +3,24 @@
 resource "google_monitoring_alert_policy" "receiver_5xx" {
   display_name = "Cadence Receiver 5xx Alert"
   combiner     = "OR"
+  severity     = "ERROR"
+
+  documentation {
+    mime_type = "text/markdown"
+    content   = <<-EOT
+      *What happened*
+      Cadence receiver returned a 5xx response at least once in the last 5 minutes.
+
+      *Impact*
+      - Client requests may be failing.
+      - Check if this is isolated or affecting many users.
+
+      *How to investigate*
+      1. Open Cloud Run service **cadence-receiver** and check recent logs.
+      2. Filter logs by `severity>=ERROR` and `httpRequest.status>=500`.
+      3. Check recent deployments or config changes.
+    EOT
+  }
 
   conditions {
     display_name = "Receiver 5xx request count > 0 (5m)"
