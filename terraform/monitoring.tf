@@ -59,3 +59,82 @@ resource "google_monitoring_alert_policy" "receiver_5xx" {
 
   enabled = true
 }
+
+# Processor の SaveEvent エラーを監視するアラートポリシー
+# 5分間に 1 回でも SaveEvent エラーが発生したら通知を送信
+resource "google_monitoring_alert_policy" "processor_save_event_error" {
+  display_name = "Cadence Processor SaveEvent Error"
+  combiner     = "OR"
+  severity     = "ERROR"
+
+  documentation {
+    mime_type = "text/markdown"
+    content   = <<-EOT
+      *What happened*
+      Cadence processor failed to save an event.
+
+      *Impact*
+      - Incoming GitHub events may not be stored in Firestore.
+      - Dashboards and metrics may miss some events.
+
+      *How to investigate*
+      1. Open Cloud Run service **cadence-processor** and check recent logs.
+      2. Filter logs by `component="processor"`, `operation="SaveEvent"`, `status="error"`.
+      3. Check Firestore availability and recent deployments.
+    EOT
+  }
+
+  conditions {
+    display_name = "Processor SaveEvent errors > 0"
+
+    condition_threshold {
+      # ログベースメトリクスを参照
+      filter = <<-EOT
+        metric.type="logging.googleapis.com/user/processor_save_event_error_count"
+        AND resource.type="cloud_run_revision"
+      EOT
+
+      duration        = "0s"
+      comparison      = "COMPARISON_GT"
+      threshold_value = 0 # 1回でもあればアラート
+
+      aggregations {
+        alignment_period     = "60s" # 1分ごとに集計
+        per_series_aligner   = "ALIGN_DELTA"
+        cross_series_reducer = "REDUCE_SUM"
+      }
+    }
+  }
+
+  depends_on = [
+    google_logging_metric.processor_save_event_error_count,
+  ]
+
+  notification_channels = [
+    var.slack_notification_channel,
+  ]
+
+  enabled = true
+}
+
+# processor が SaveEvent に失敗した回数をカウントするログベースメトリクス
+resource "google_logging_metric" "processor_save_event_error_count" {
+  name        = "processor_save_event_error_count"
+  description = "Count of processor SaveEvent errors"
+
+  # cadence-processor の Cloud Run ログのうち、SaveEvent かつ error だけを対象
+  filter = <<-EOT
+    resource.type="cloud_run_revision"
+    resource.labels.service_name="cadence-processor"
+    severity>=ERROR
+    jsonPayload.component="processor"
+    jsonPayload.operation="SaveEvent"
+    jsonPayload.status="error"
+  EOT
+
+  metric_descriptor {
+    metric_kind = "DELTA"
+    value_type  = "INT64"
+    unit        = "1"
+  }
+}
