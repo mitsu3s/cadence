@@ -10,7 +10,7 @@ resource "google_monitoring_alert_policy" "receiver_5xx" {
     mime_type = "text/markdown"
     content   = <<-EOT
       *What happened*
-      Cadence receiver returned a 5xx response at least once in the last 5 minutes.
+      Cadence receiver returned a 5xx response at least once.
 
       *Impact*
       - Client requests may be failing.
@@ -24,7 +24,7 @@ resource "google_monitoring_alert_policy" "receiver_5xx" {
   }
 
   conditions {
-    display_name = "Receiver 5xx request count > 0 (5m)"
+    display_name = "Receiver 5xx request count > 0"
 
     condition_threshold {
       # Cloud Run のリクエストカウントメトリクス
@@ -36,8 +36,7 @@ resource "google_monitoring_alert_policy" "receiver_5xx" {
         metric.labels.response_code_class="5xx"
       EOT
 
-      # 5分間のウィンドウで評価
-      duration   = "300s"
+      duration   = "0s"
       comparison = "COMPARISON_GT"
       # 少なくとも 1 回
       threshold_value = 0
