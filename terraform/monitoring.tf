@@ -36,14 +36,14 @@ resource "google_monitoring_alert_policy" "receiver_5xx" {
         metric.labels.response_code_class="5xx"
       EOT
 
+      # 5分間に 1回でも 5xx が出たらアラート
       duration   = "0s"
       comparison = "COMPARISON_GT"
       # 少なくとも 1 回
       threshold_value = 0
 
-      # 時系列のまとめ方（集計方法）
       aggregations {
-        alignment_period     = "60s"
+        alignment_period     = "300s"
         per_series_aligner   = "ALIGN_DELTA"
         cross_series_reducer = "REDUCE_SUM"
         group_by_fields = [
