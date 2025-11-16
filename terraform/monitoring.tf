@@ -60,6 +60,60 @@ resource "google_monitoring_alert_policy" "receiver_5xx" {
   enabled = true
 }
 
+# Pub/Sub の backlog（未処理メッセージ）を監視するアラートポリシー
+resource "google_monitoring_alert_policy" "pubsub_backlog" {
+  display_name = "Cadence PubSub Backlog"
+  combiner     = "OR"
+  severity     = "WARNING"
+
+  documentation {
+    mime_type = "text/markdown"
+    content   = <<-EOT
+      *What happened*
+      Pub/Sub subscription **cadence-events-processor** has undelivered messages for several minutes.
+
+      *Impact*
+      - Cadence processor may be slow or failing to keep up with incoming events.
+      - Recent GitHub events may not yet be visible in dashboards.
+
+      *How to investigate*
+      1. Check Cloud Run service **cadence-processor** for errors or high latency.
+      2. Verify Pub/Sub subscription **cadence-events-processor** is healthy.
+      3. Look for recent deployments or configuration changes.
+    EOT
+  }
+
+  conditions {
+    display_name = "Pub/Sub backlog > 0"
+
+    condition_threshold {
+      filter = <<-EOT
+        metric.type="pubsub.googleapis.com/subscription/num_undelivered_messages"
+        resource.type="pubsub_subscription"
+        resource.labels.subscription_id="cadence-events-processor"
+      EOT
+
+      # 5分間に 1件以上 backlog があればアラート
+      duration        = "0s"
+      comparison      = "COMPARISON_GT"
+      threshold_value = 0
+
+      aggregations {
+        alignment_period     = "300s"
+        per_series_aligner   = "ALIGN_MAX"
+        cross_series_reducer = "REDUCE_MAX"
+      }
+    }
+  }
+
+  notification_channels = [
+    var.slack_notification_channel,
+  ]
+
+  enabled = true
+}
+
+
 # Processor の SaveEvent エラーを監視するアラートポリシー
 # 5分間に 1 回でも SaveEvent エラーが発生したら通知を送信
 resource "google_monitoring_alert_policy" "processor_save_event_error" {
@@ -94,12 +148,13 @@ resource "google_monitoring_alert_policy" "processor_save_event_error" {
         AND resource.type="cloud_run_revision"
       EOT
 
+      # 1分間に 1回でもあればアラート
       duration        = "0s"
       comparison      = "COMPARISON_GT"
-      threshold_value = 0 # 1回でもあればアラート
+      threshold_value = 0
 
       aggregations {
-        alignment_period     = "60s" # 1分ごとに集計
+        alignment_period     = "60s"
         per_series_aligner   = "ALIGN_DELTA"
         cross_series_reducer = "REDUCE_SUM"
       }
