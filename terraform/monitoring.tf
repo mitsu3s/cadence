@@ -5,6 +5,7 @@ resource "google_monitoring_alert_policy" "receiver_5xx" {
   combiner     = "OR"
   severity     = "ERROR"
 
+  # アラートの説明と調査手順
   documentation {
     mime_type = "text/markdown"
     content   = <<-EOT
