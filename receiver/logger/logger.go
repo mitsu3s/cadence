@@ -14,7 +14,7 @@ func InitZap() error {
 
 	format := os.Getenv("LOG_FORMAT")
 	if format == "" {
-		format = "console"
+		format = "json"
 	}
 
 	level := zapcore.InfoLevel
