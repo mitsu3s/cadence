@@ -1,17 +1,3 @@
-# Cadence の 状態を通知する Slack チャンネル
-resource "google_monitoring_notification_channel" "slack_cadence" {
-  display_name = "Cadence Slack Alerts"
-  type         = "slack"
-
-  labels = {
-    # Monitoring API から渡す Slack Webhook URL
-    "webhook_url" = var.slack_webhook_url
-  }
-
-  # チャネルを削除するときの確認ダイアログを抑制
-  force_delete = true
-}
-
 # Cadence Receiver の 5xx エラー発生を監視するアラートポリシー
 # 5分間に 5xx エラーが 1 回でも発生したら通知を送信
 resource "google_monitoring_alert_policy" "receiver_5xx" {
@@ -50,7 +36,7 @@ resource "google_monitoring_alert_policy" "receiver_5xx" {
   }
 
   notification_channels = [
-    google_monitoring_notification_channel.slack_cadence.name,
+    var.slack_notification_channel
   ]
 
   enabled = true

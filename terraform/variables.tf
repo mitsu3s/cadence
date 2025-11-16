@@ -58,9 +58,7 @@ variable "github_webhook_secret" {
   sensitive   = true
 }
 
-variable "slack_webhook_url" {
+variable "slack_notification_channel" {
+  description = "Monitoring notification channel resource name"
   type        = string
-  description = "Slack Webhook URL for sending notifications"
-  sensitive   = true
-
 }
