@@ -29,7 +29,20 @@ type prPayload struct {
 		FullName string `json:"full_name"`
 	} `json:"repository"`
 	PullRequest struct {
-		Title string `json:"title"`
+		Number int    `json:"number"`
+		Title  string `json:"title"`
+
+		User struct {
+			Login string `json:"login"`
+		} `json:"user"`
+
+		Base struct {
+			Ref string `json:"ref"`
+		} `json:"base"`
+
+		Merged    bool      `json:"merged"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
 	} `json:"pull_request"`
 }
 
@@ -109,14 +122,24 @@ func PubSub(st store.Store) http.HandlerFunc {
 				id = d
 			}
 
+			// 発生時刻: updated_at があればそれを使う。なければ created_at
+			occurredAt := p.PullRequest.UpdatedAt
+			if occurredAt.IsZero() {
+				occurredAt = p.PullRequest.CreatedAt
+			}
+
 			ev := model.Event{
-				ID:         id,
-				Type:       "pull_request",
-				Repository: p.Repository.FullName,
-				Action:     p.Action,
-				Title:      p.PullRequest.Title,
-				CreatedAt:  time.Now(), // 後でpayload由来に修正可
-				ReceivedAt: time.Now(),
+				ID:           id,
+				Type:         model.EventTypePullRequest,
+				Repo:         p.Repository.FullName,    // "owner/name"
+				Actor:        p.PullRequest.User.Login, // PR の author
+				Action:       p.Action,                 // "opened", "closed", "synchronize" など
+				OccurredAt:   occurredAt,               // GitHub 側のイベント発生時刻
+				ReceivedAt:   time.Now(),               // cadence が受け取った時刻
+				PRNumber:     p.PullRequest.Number,
+				PRTitle:      p.PullRequest.Title,
+				PRIsMerged:   p.PullRequest.Merged,
+				PRBaseBranch: p.PullRequest.Base.Ref,
 			}
 
 			if err := st.SaveEvent(r.Context(), ev); err != nil {
