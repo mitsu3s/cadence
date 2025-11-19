@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mitsu3s/cadence/logger"
@@ -22,7 +23,7 @@ type pubsubEnvelope struct {
 	Subscription string `json:"subscription"`
 }
 
-// 受け取る payload（receiver から publish される想定）
+// PR イベント用ペイロード
 type prPayload struct {
 	Action     string `json:"action"`
 	Repository struct {
@@ -46,7 +47,27 @@ type prPayload struct {
 	} `json:"pull_request"`
 }
 
-// 既存の prPayload はそのままにして、下を追加
+// push イベント用ペイロード
+type pushPayload struct {
+	Ref        string `json:"ref"` // "refs/heads/main" など
+	Repository struct {
+		FullName string `json:"full_name"` // "owner/name"
+	} `json:"repository"`
+	Pusher struct {
+		Name  string `json:"name"`
+		Email string `json:"email"`
+	} `json:"pusher"`
+	Commits []struct {
+		ID        string    `json:"id"`
+		Timestamp time.Time `json:"timestamp"`
+		Message   string    `json:"message"`
+	} `json:"commits"`
+	HeadCommit struct {
+		ID        string    `json:"id"`
+		Timestamp time.Time `json:"timestamp"`
+		Message   string    `json:"message"`
+	} `json:"head_commit"`
+}
 
 // installation.created / deleted 用
 type installationPayload struct {
@@ -159,6 +180,79 @@ func PubSub(st store.Store) http.HandlerFunc {
 
 			latency := time.Since(start).Milliseconds()
 			logger.LogInfo("processor save event ok",
+				"component", "processor",
+				"operation", "SaveEvent",
+				"status", "ok",
+				"delivery", delivery,
+				"repo", p.Repository.FullName,
+				"latency_ms", latency,
+			)
+
+		case "push":
+			var p pushPayload
+			if err := json.Unmarshal(raw, &p); err != nil {
+				logger.LogErr("processor push payload decode error",
+					"component", "processor",
+					"operation", "Push",
+					"status", "error",
+					"event", event,
+					"delivery", delivery,
+					"error", err,
+				)
+				http.Error(w, "bad push payload", http.StatusBadRequest)
+				return
+			}
+
+			// 冪等性: Delivery ID を使う（今までと同じ）
+			id := env.Message.MessageID
+			if d, ok := env.Message.Attributes["delivery"]; ok && d != "" {
+				id = d
+			}
+
+			// ブランチ名: "refs/heads/main" → "main" にする
+			branch := p.Ref
+			const prefix = "refs/heads/"
+			branch = strings.TrimPrefix(branch, prefix)
+
+			// 発生時刻: head_commit の timestamp を優先
+			occurredAt := p.HeadCommit.Timestamp
+			if occurredAt.IsZero() && len(p.Commits) > 0 {
+				occurredAt = p.Commits[len(p.Commits)-1].Timestamp
+			}
+
+			if occurredAt.IsZero() {
+				occurredAt = time.Now()
+			}
+
+			ev := model.Event{
+				ID:              id,
+				Type:            model.EventTypePush, // 事前に定義したやつ
+				Repo:            p.Repository.FullName,
+				Actor:           p.Pusher.Name, // or Login があればそっち
+				Action:          "pushed",
+				OccurredAt:      occurredAt,
+				ReceivedAt:      time.Now(),
+				PushCommitCount: len(p.Commits),
+				PushBranch:      branch,
+			}
+
+			if err := st.SaveEvent(r.Context(), ev); err != nil {
+				latency := time.Since(start).Milliseconds()
+				logger.LogErr("processor save push event failed",
+					"component", "processor",
+					"operation", "SaveEvent",
+					"status", "error",
+					"delivery", delivery,
+					"repo", p.Repository.FullName,
+					"latency_ms", latency,
+					"error", err,
+				)
+				http.Error(w, "save failed", http.StatusInternalServerError)
+				return
+			}
+
+			latency := time.Since(start).Milliseconds()
+			logger.LogInfo("processor save push event ok",
 				"component", "processor",
 				"operation", "SaveEvent",
 				"status", "ok",
