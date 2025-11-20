@@ -18,5 +18,6 @@ type EventQuery struct {
 type Store interface {
 	SaveEvent(ctx context.Context, ev model.Event) error
 	ListEvents(ctx context.Context, query EventQuery) ([]model.Event, error)
+	ListEventsByRepoAndRange(ctx context.Context, repo string, from time.Time, to time.Time) ([]model.Event, error)
 	Close() error
 }
