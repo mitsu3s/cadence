@@ -24,6 +24,7 @@ func New(cfg *config.Config, st store.Store) *Server {
 	mux.HandleFunc("/health", handler.Health)
 	mux.HandleFunc("/events", handler.ListEvents(st))
 	mux.HandleFunc("/stats/daily", handler.StatsDaily(st))
+	mux.HandleFunc("/timeline", handler.Timeline(st))
 
 	return &Server{
 		cfg: cfg,
