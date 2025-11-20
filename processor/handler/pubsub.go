@@ -50,6 +50,12 @@ type prPayload struct {
 // push イベント用ペイロード
 type pushPayload struct {
 	Ref        string `json:"ref"` // "refs/heads/main" など
+	Before     string `json:"before"`
+	After      string `json:"after"`
+	Created    bool   `json:"created"`
+	Deleted    bool   `json:"deleted"`
+	Forced     bool   `json:"forced"`
+	Compare    string `json:"compare"`
 	Repository struct {
 		FullName string `json:"full_name"` // "owner/name"
 	} `json:"repository"`
@@ -66,6 +72,9 @@ type pushPayload struct {
 		ID        string    `json:"id"`
 		Timestamp time.Time `json:"timestamp"`
 		Message   string    `json:"message"`
+		Author    struct {
+			Name string `json:"name"`
+		} `json:"author"`
 	} `json:"head_commit"`
 }
 
@@ -201,6 +210,17 @@ func PubSub(st store.Store) http.HandlerFunc {
 				)
 				http.Error(w, "bad push payload", http.StatusBadRequest)
 				return
+			}
+
+			if p.Deleted {
+				logger.LogInfo("ignore deleted branch push",
+					"component", "processor",
+					"operation", "Push",
+					"status", "ignored",
+					"repo", p.Repository.FullName,
+					"ref", p.Ref,
+				)
+				break
 			}
 
 			// 冪等性: Delivery ID を使う（今までと同じ）
