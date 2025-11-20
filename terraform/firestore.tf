@@ -29,3 +29,19 @@ resource "google_firestore_index" "events_by_type" {
     order      = "DESCENDING"
   }
 }
+
+# リポジトリ単位イベントを取得するための Firestore インデックス
+resource "google_firestore_index" "events_by_repo_occurred_at" {
+  project    = var.project_id
+  collection = "events"
+
+  fields {
+    field_path = "repo"
+    order      = "ASCENDING"
+  }
+
+  fields {
+    field_path = "occurred_at"
+    order      = "ASCENDING"
+  }
+}
