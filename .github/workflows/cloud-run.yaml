@@ -11,6 +11,7 @@ on:
           - api
           - processor
           - receiver
+          - web
 
 permissions:
   id-token: write
