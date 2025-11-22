@@ -22,8 +22,8 @@ export default async function Home({ searchParams }: Props) {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50 selection:bg-blue-500/30">
       <Sidebar />
-      <main className="pl-80">
-        <div className="container p-8 pt-12">
+      <main className="md:pl-80 pt-16 md:pt-0">
+        <div className="container p-4 md:p-8 md:pt-12">
           <header className="mb-10">
             <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Dashboard</h1>
             <p className="text-zinc-400">Overview of development activity for <span className="text-zinc-200 font-medium">{repo}</span></p>
