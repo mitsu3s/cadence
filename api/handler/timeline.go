@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/mitsu3s/cadence/logger"
+	"github.com/mitsu3s/cadence/model"
 	"github.com/mitsu3s/cadence/store"
 )
 
@@ -56,18 +57,21 @@ func Timeline(st store.Store) http.HandlerFunc {
 
 		items := make([]TimelineItem, 0, len(events))
 		for _, ev := range events {
+			// まずタイムラインに載せるかどうかを判定
+			if !includeInTimeline(ev) {
+				continue
+			}
+
 			item := TimelineItem{
-				Time:   ev.OccurredAt,
-				Type:   string(ev.Type),
-				Repo:   ev.Repo,
-				Actor:  ev.Actor,
-				Action: ev.Action,
-
-				PRNumber:     ev.PRNumber,
-				PRTitle:      ev.PRTitle,
-				PRIsMerged:   ev.PRIsMerged,
-				PRBaseBranch: ev.PRBaseBranch,
-
+				Time:            ev.OccurredAt,
+				Type:            string(ev.Type),
+				Repo:            ev.Repo,
+				Actor:           ev.Actor,
+				Action:          ev.Action,
+				PRNumber:        ev.PRNumber,
+				PRTitle:         ev.PRTitle,
+				PRIsMerged:      ev.PRIsMerged,
+				PRBaseBranch:    ev.PRBaseBranch,
 				PushBranch:      ev.PushBranch,
 				PushCommitCount: ev.PushCommitCount,
 			}
@@ -78,5 +82,31 @@ func Timeline(st store.Store) http.HandlerFunc {
 		if err := json.NewEncoder(w).Encode(items); err != nil {
 			logger.LogErr("timeline encode failed", "error", err)
 		}
+	}
+}
+
+// タイムラインに載せる/載せないを決めるフィルタ
+func includeInTimeline(ev model.Event) bool {
+	switch ev.Type {
+	case model.EventTypePush:
+		return true
+
+	case model.EventTypePullRequest:
+		if ev.Actor == "renovate[bot]" || ev.Actor == "dependabot[bot]" {
+			switch ev.Action {
+			case "labeled", "unlabeled", "edited", "review_requested":
+				return false
+			}
+		}
+
+		switch ev.Action {
+		case "opened", "closed", "merged", "reopened", "synchronize":
+			return true
+		default:
+			return false
+		}
+
+	default:
+		return false
 	}
 }
