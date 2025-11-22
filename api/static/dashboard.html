@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Cadence Dashboard</title>
+        <style>
+            body {
+                font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                    "Segoe UI", sans-serif;
+                margin: 0;
+                padding: 16px;
+                background-color: #f5f5f5;
+            }
+            h1 {
+                font-size: 20px;
+                margin-bottom: 12px;
+            }
+            .panel {
+                background: #fff;
+                border-radius: 8px;
+                padding: 12px 16px;
+                margin-bottom: 16px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            }
+            label {
+                font-size: 12px;
+                color: #555;
+                display: block;
+                margin-bottom: 4px;
+            }
+            input {
+                padding: 4px 8px;
+                font-size: 14px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+                width: 260px;
+            }
+            input[type="number"] {
+                width: 80px;
+            }
+            button {
+                padding: 6px 12px;
+                margin-left: 8px;
+                border-radius: 4px;
+                border: none;
+                background: #2563eb;
+                color: #fff;
+                font-size: 14px;
+                cursor: pointer;
+            }
+            button:disabled {
+                opacity: 0.6;
+                cursor: default;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 13px;
+            }
+            th,
+            td {
+                padding: 6px 8px;
+                border-bottom: 1px solid #eee;
+                text-align: left;
+                vertical-align: middle;
+            }
+            th {
+                background: #f9fafb;
+                font-weight: 600;
+            }
+            .badge {
+                display: inline-block;
+                padding: 2px 6px;
+                border-radius: 999px;
+                font-size: 11px;
+                background: #e5e7eb;
+                color: #111827;
+                margin-right: 4px;
+            }
+            pre {
+                font-size: 12px;
+                background: #111827;
+                color: #e5e7eb;
+                padding: 8px;
+                border-radius: 6px;
+                overflow-x: auto;
+                max-height: 260px;
+            }
+
+            /* ここからタイムライン用のスタイル */
+            .timeline {
+                list-style: none;
+                padding-left: 0;
+                margin: 0;
+            }
+            .timeline-item {
+                display: flex;
+                align-items: baseline;
+                gap: 8px;
+                padding: 4px 0;
+                border-bottom: 1px solid #eee;
+                font-size: 12px;
+            }
+            .timeline-time {
+                font-family: monospace;
+                color: #6b7280;
+                width: 42px;
+            }
+            .timeline-actor {
+                font-weight: 500;
+                margin-right: 4px;
+            }
+            .timeline-main {
+                color: #111827;
+            }
+            .badge-pr {
+                background: #dbeafe;
+                color: #1d4ed8;
+            }
+            .badge-push {
+                background: #dcfce7;
+                color: #15803d;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="panel">
+            <h1>Cadence Dashboard</h1>
+            <div
+                style="
+                    display: flex;
+                    gap: 16px;
+                    align-items: flex-end;
+                    flex-wrap: wrap;
+                "
+            >
+                <div>
+                    <label for="repo">Repository (owner/name)</label>
+                    <input id="repo" type="text" placeholder="mitsu3s/icer" />
+                </div>
+                <div>
+                    <label for="days">Days</label>
+                    <input id="days" type="number" value="7" min="1" max="90" />
+                </div>
+                <div>
+                    <button id="load-stats">表示</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="font-size: 16px; margin: 0 0 8px">Daily Stats</h2>
+            <div
+                id="stats-status"
+                style="font-size: 12px; color: #6b7280; margin-bottom: 8px"
+            ></div>
+            <div id="stats-table-wrapper"></div>
+        </div>
+
+        <div class="panel">
+            <h2 style="font-size: 16px; margin: 0 0 8px">
+                Timeline (selected day)
+            </h2>
+            <div
+                id="timeline-status"
+                style="font-size: 12px; color: #6b7280; margin-bottom: 8px"
+            ></div>
+            <div id="timeline-wrapper"></div>
+        </div>
+
+        <script>
+            const statsButton = document.getElementById("load-stats");
+            const repoInput = document.getElementById("repo");
+            const daysInput = document.getElementById("days");
+            const statsStatus = document.getElementById("stats-status");
+            const statsWrapper = document.getElementById("stats-table-wrapper");
+            const timelineStatus = document.getElementById("timeline-status");
+            const timelineWrapper = document.getElementById("timeline-wrapper");
+
+            statsButton.addEventListener("click", async () => {
+                const repo = repoInput.value.trim();
+                const days = daysInput.value.trim() || "7";
+
+                if (!repo) {
+                    alert("repo を入力してください (例: mitsu3s/icer)");
+                    return;
+                }
+
+                statsButton.disabled = true;
+                statsStatus.textContent = "Loading...";
+                statsWrapper.innerHTML = "";
+                timelineStatus.textContent = "";
+                timelineWrapper.innerHTML = "";
+
+                try {
+                    const params = new URLSearchParams({ repo, days });
+                    const res = await fetch(
+                        `/stats/daily?${params.toString()}`
+                    );
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}`);
+                    }
+                    const data = await res.json();
+                    statsStatus.textContent = `repo=${data.repo}, range=${data.from}〜${data.to}`;
+                    renderStatsTable(data);
+                } catch (err) {
+                    console.error(err);
+                    statsStatus.textContent = "Failed to load stats";
+                    statsWrapper.innerHTML = "";
+                } finally {
+                    statsButton.disabled = false;
+                }
+            });
+
+            function renderStatsTable(data) {
+                if (!data.stats || data.stats.length === 0) {
+                    statsWrapper.innerHTML =
+                        '<p style="font-size:12px;color:#6b7280;">データがありません。</p>';
+                    return;
+                }
+
+                let html = "<table><thead><tr>";
+                html += "<th>Date</th>";
+                html += "<th>Push</th>";
+                html += "<th>Commits</th>";
+                html += "<th>PR opened</th>";
+                html += "<th>PR merged</th>";
+                html += "<th>PR closed</th>";
+                html += "<th>PR sync</th>";
+                html += "<th>Total</th>";
+                html += "<th></th>";
+                html += "</tr></thead><tbody>";
+
+                for (const d of data.stats) {
+                    html += "<tr>";
+                    html += `<td>${d.date}</td>`;
+                    html += `<td>${d.push_count}</td>`;
+                    html += `<td>${d.push_commits}</td>`;
+                    html += `<td>${d.pr_opened}</td>`;
+                    html += `<td>${d.pr_merged}</td>`;
+                    html += `<td>${d.pr_closed}</td>`;
+                    html += `<td>${d.pr_synchronized}</td>`;
+                    html += `<td>${d.total_activity}</td>`;
+                    html += `<td><button data-date="${d.date}" class="show-timeline">詳細</button></td>`;
+                    html += "</tr>";
+                }
+
+                html += "</tbody></table>";
+                statsWrapper.innerHTML = html;
+
+                // 「詳細」ボタンにイベント付与
+                for (const btn of statsWrapper.querySelectorAll(
+                    ".show-timeline"
+                )) {
+                    btn.addEventListener("click", () => {
+                        const date = btn.getAttribute("data-date");
+                        loadTimeline(data.repo, date);
+                    });
+                }
+            }
+
+            async function loadTimeline(repo, date) {
+                timelineStatus.textContent = `Loading timeline for ${date}...`;
+                timelineWrapper.innerHTML = "";
+
+                try {
+                    const params = new URLSearchParams({ repo, date });
+                    const res = await fetch(`/timeline?${params.toString()}`);
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}`);
+                    }
+                    const items = await res.json();
+                    timelineStatus.textContent = `${items.length} events`;
+
+                    renderTimeline(items);
+                } catch (err) {
+                    console.error(err);
+                    timelineStatus.textContent = "Failed to load timeline";
+                    timelineWrapper.innerHTML = "";
+                }
+            }
+
+            function renderTimeline(items) {
+                if (!items || items.length === 0) {
+                    timelineWrapper.innerHTML =
+                        '<p style="font-size:12px;color:#6b7280;">イベントはありません。</p>';
+                    return;
+                }
+
+                let html = '<ul class="timeline">';
+                for (const ev of items) {
+                    const t = new Date(ev.time);
+                    const timeStr = t.toLocaleTimeString("ja-JP", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    });
+
+                    let badge = "";
+                    let main = "";
+
+                    if (ev.type === "pull_request") {
+                        badge = '<span class="badge badge-pr">PR</span>';
+                        const num = ev.pr_number ? `#${ev.pr_number}` : "";
+                        const base = ev.pr_base_branch
+                            ? ` → ${ev.pr_base_branch}`
+                            : "";
+                        main = `${ev.action} ${num} ${
+                            ev.pr_title || ""
+                        }${base}`;
+                    } else if (ev.type === "push") {
+                        badge = '<span class="badge badge-push">PUSH</span>';
+                        const count = ev.push_commit_count || 0;
+                        main = `pushed ${count} commit(s) to ${
+                            ev.push_branch || ""
+                        }`;
+                    } else {
+                        // それ以外はとりあえずそのまま
+                        main = `${ev.type} ${ev.action || ""}`;
+                    }
+
+                    const actor = ev.actor
+                        ? `<span class="timeline-actor">${ev.actor}</span>`
+                        : "";
+
+                    html += `
+          <li class="timeline-item">
+            <span class="timeline-time">${timeStr}</span>
+            ${badge}
+            ${actor}
+            <span class="timeline-main">${main}</span>
+          </li>
+        `;
+                }
+                html += "</ul>";
+
+                timelineWrapper.innerHTML = html;
+            }
+        </script>
+    </body>
+</html>
