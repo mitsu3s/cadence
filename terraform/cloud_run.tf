@@ -37,7 +37,7 @@ resource "google_cloud_run_service_iam_member" "api_invoker" {
   member   = "allUsers"
 }
 
-
+### cadence のイベントを受け取る Cloud Run サービス
 resource "google_cloud_run_service" "cadence_receiver" {
   name     = "cadence-receiver"
   location = "asia-northeast1"
@@ -154,4 +154,43 @@ resource "google_cloud_run_service_iam_member" "processor_invoker" {
   service  = google_cloud_run_service.cadence_processor.name
   role     = "roles/run.invoker"
   member   = "serviceAccount:${google_service_account.cadence_run.email}"
+}
+
+### cadence のダッシュボードを表示する Cloud Run サービス
+resource "google_cloud_run_service" "cadence_web" {
+  name     = "cadence-web"
+  location = "asia-northeast1"
+
+  template {
+    spec {
+      service_account_name = google_service_account.cadence_run.email
+
+      containers {
+        image = "asia-northeast1-docker.pkg.dev/${var.project_id}/cadence-repository/cadence-web:${var.web_image_tag}"
+
+        ports {
+          container_port = 3000
+        }
+
+        env {
+          name  = "API_BASE_URL"
+          value = google_cloud_run_service.cadence_api.status[0].url
+        }
+      }
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+}
+
+### cadence を呼び出す権限を全員に付与
+resource "google_cloud_run_service_iam_member" "web_invoker" {
+  project  = var.project_id
+  location = var.region
+  service  = google_cloud_run_service.cadence_web.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
