@@ -40,6 +40,11 @@ variable "processor_image_tag" {
   description = "Container image tag for cadence processor"
 }
 
+variable "web_image_tag" {
+  type        = string
+  description = "Container image tag for cadence web"
+}
+
 variable "github_app_id" {
   type        = string
   description = "GitHub App ID"

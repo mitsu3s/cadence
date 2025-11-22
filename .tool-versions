@@ -4,3 +4,4 @@ python 3.13.9
 terraform 1.13.4
 gcloud 531.0.0
 jq 1.8.1
+nodejs 24.11.1

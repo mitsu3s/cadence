@@ -1,0 +1,87 @@
+name: Next.js CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "web/**"
+      - ".github/workflows/nextjs.yaml"
+  pull_request:
+    branches:
+      - main
+      - develop
+      - "feature/**"
+      - "hotfix/**"
+    paths:
+      - "web/**"
+      - ".github/workflows/nextjs.yaml"
+
+jobs:
+  nextjs-lint:
+    name: Next.js Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: ./web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  nextjs-typecheck:
+    name: Next.js Type Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: ./web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # TypeScriptの型チェックを実行
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+
+  nextjs-build:
+    name: Next.js Build
+    runs-on: ubuntu-latest
+    # リントチェックと型チェックが成功した場合にのみビルドを実行
+    needs: [nextjs-lint, nextjs-typecheck]
+    defaults:
+      run:
+        working-directory: ./web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: ./web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Next.jsアプリケーションのビルドを実行
+      - name: Build Next.js
+        run: npm run build
