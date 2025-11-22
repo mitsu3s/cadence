@@ -94,6 +94,26 @@ func (s *fireStore) ListEvents(ctx context.Context, query EventQuery) ([]model.E
 	return events, nil
 }
 
+func (s *fireStore) ListEventsByRepoAndRange(ctx context.Context, repo string, from time.Time, to time.Time) ([]model.Event, error) {
+	q := s.client.Collection("events").Where("repo", "==", repo).Where("occurred_at", ">=", from).Where("occurred_at", "<", to).OrderBy("occurred_at", firestore.Asc)
+
+	docs, err := q.Documents(ctx).GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	events := make([]model.Event, 0, len(docs))
+	for _, d := range docs {
+		var ev model.Event
+		if err := d.DataTo(&ev); err != nil {
+			return nil, err
+		}
+		events = append(events, ev)
+	}
+
+	return events, nil
+}
+
 func (s *fireStore) Close() error {
 	return s.client.Close()
 }
