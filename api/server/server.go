@@ -20,10 +20,10 @@ func New(cfg *config.Config, st store.Store) *Server {
 	mux := http.NewServeMux()
 
 	// リクエストのルーティングを設定
-	mux.HandleFunc("/", handler.Dashboard())
 	mux.HandleFunc("/health", handler.Health)
 	mux.HandleFunc("/events", handler.ListEvents(st))
 	mux.HandleFunc("/stats/daily", handler.StatsDaily(st))
+	mux.HandleFunc("/stats/rhythm", handler.Rhythm(st))
 	mux.HandleFunc("/timeline", handler.Timeline(st))
 
 	return &Server{
