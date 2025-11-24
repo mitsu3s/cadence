@@ -22,6 +22,20 @@ resource "google_secret_manager_secret" "github_webhook_secret" {
   }
 }
 
+resource "google_secret_manager_secret" "github_oauth_client_id" {
+  secret_id = "github-oauth-client-id"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "github_oauth_client_secret" {
+  secret_id = "github-oauth-client-secret"
+  replication {
+    auto {}
+  }
+}
+
 # それぞれに中身を登録
 resource "google_secret_manager_secret_version" "github_app_id_v1" {
   secret      = google_secret_manager_secret.github_app_id.id
@@ -36,4 +50,14 @@ resource "google_secret_manager_secret_version" "github_app_private_key_v1" {
 resource "google_secret_manager_secret_version" "github_webhook_secret_v1" {
   secret      = google_secret_manager_secret.github_webhook_secret.id
   secret_data = var.github_webhook_secret
+}
+
+resource "google_secret_manager_secret_version" "github_oauth_client_id_v1" {
+  secret      = google_secret_manager_secret.github_oauth_client_id.id
+  secret_data = var.github_oauth_client_id
+}
+
+resource "google_secret_manager_secret_version" "github_oauth_client_secret_v1" {
+  secret      = google_secret_manager_secret.github_oauth_client_secret.id
+  secret_data = var.github_oauth_client_secret
 }
