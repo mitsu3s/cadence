@@ -16,6 +16,7 @@ GitHub のイベントを収集・可視化して、自分の開発リズム（�
 
 ## Future work
 
+-   キャッシュ or 事前処理によるパフォーマンス改善
+-   Cloud Armor や Load Balancer を用いたサービスの外側の強化
 -   Github App の公開
--   GKE への移行
 -   ダッシュボード上での認証・認可の実装
