@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, ReactNode } from "react";
 import { User, onAuthStateChanged, signInWithPopup, GithubAuthProvider, signOut } from "firebase/auth";
 import { initFirebase, FirebaseConfig, getFirebaseAuth } from "../lib/firebase";
 
@@ -30,17 +30,20 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children, config, apiBaseUrl }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
+
+  // Initialize auth in useMemo to avoid side effects in render, but get the instance
+  const auth = useMemo(() => {
+    return initFirebase(config)?.auth;
+  }, [config]);
+
+  // Initial loading state depends on whether auth was initialized
+  const [loading, setLoading] = useState(!!auth);
 
   useEffect(() => {
-    const { auth } = initFirebase(config) || {};
     if (!auth) {
       console.error("Failed to initialize Firebase Auth");
-      setLoading(false);
       return;
     }
-    setInitialized(true);
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
@@ -48,7 +51,7 @@ export const AuthProvider = ({ children, config, apiBaseUrl }: AuthProviderProps
     });
 
     return () => unsubscribe();
-  }, [config]);
+  }, [auth]);
 
   const signInWithGithub = async () => {
     const auth = getFirebaseAuth();

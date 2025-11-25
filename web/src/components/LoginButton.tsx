@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { Github, LogOut } from "lucide-react";
+import Image from "next/image";
 
 
 export default function LoginButton() {
@@ -12,7 +13,13 @@ export default function LoginButton() {
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3 px-2">
           {user.photoURL ? (
-            <img src={user.photoURL} alt={user.displayName || "User"} className="w-8 h-8 rounded-full border border-zinc-700" />
+            <Image
+              src={user.photoURL}
+              alt={user.displayName || "User"}
+              width={32}
+              height={32}
+              className="rounded-full border border-zinc-700"
+            />
           ) : (
             <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700" />
           )}
