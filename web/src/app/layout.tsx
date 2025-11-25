@@ -5,8 +5,8 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
-  title: "Cadence",
-  description: "Visualize your coding rhythm",
+  title: "Cadence - Development Rhythm Visualizer",
+  description: "Visualize your development rhythm",
 };
 
 export default function RootLayout({
