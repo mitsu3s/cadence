@@ -27,6 +27,7 @@ func New(cfg *config.Config, st store.Store) *Server {
 	mux.HandleFunc("/stats/daily", middleware.AuthMiddleware(handler.StatsDaily(st)))
 	mux.HandleFunc("/stats/rhythm", middleware.AuthMiddleware(handler.Rhythm(st)))
 	mux.HandleFunc("/timeline", middleware.AuthMiddleware(handler.Timeline(st)))
+	mux.HandleFunc("/user/repos", middleware.AuthMiddleware(handler.ListUserRepos(st)))
 
 	return &Server{
 		cfg: cfg,
