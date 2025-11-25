@@ -45,3 +45,19 @@ resource "google_firestore_index" "events_by_repo_occurred_at" {
     order      = "ASCENDING"
   }
 }
+
+# アクティブな installations をアカウントログインで取得するための Firestore インデックス
+resource "google_firestore_index" "installations_by_account_active" {
+  project    = var.project_id
+  collection = "installations"
+
+  fields {
+    field_path = "account_login"
+    order      = "ASCENDING"
+  }
+
+  fields {
+    field_path = "active"
+    order      = "ASCENDING"
+  }
+}

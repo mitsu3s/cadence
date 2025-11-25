@@ -7,6 +7,7 @@ import (
 	"github.com/mitsu3s/cadence/config"
 	"github.com/mitsu3s/cadence/handler"
 	"github.com/mitsu3s/cadence/logger"
+	"github.com/mitsu3s/cadence/middleware"
 	"github.com/mitsu3s/cadence/store"
 )
 
@@ -20,16 +21,18 @@ func New(cfg *config.Config, st store.Store) *Server {
 	mux := http.NewServeMux()
 
 	// リクエストのルーティングを設定
+	// ミドルウェアを使い、エンドポイントを保護
 	mux.HandleFunc("/health", handler.Health)
-	mux.HandleFunc("/events", handler.ListEvents(st))
-	mux.HandleFunc("/stats/daily", handler.StatsDaily(st))
-	mux.HandleFunc("/stats/rhythm", handler.Rhythm(st))
-	mux.HandleFunc("/timeline", handler.Timeline(st))
+	mux.HandleFunc("/events", middleware.AuthMiddleware(handler.ListEvents(st)))
+	mux.HandleFunc("/stats/daily", middleware.AuthMiddleware(handler.StatsDaily(st)))
+	mux.HandleFunc("/stats/rhythm", middleware.AuthMiddleware(handler.Rhythm(st)))
+	mux.HandleFunc("/timeline", middleware.AuthMiddleware(handler.Timeline(st)))
+	mux.HandleFunc("/user/repos", middleware.AuthMiddleware(handler.ListUserRepos(st)))
 
 	return &Server{
 		cfg: cfg,
 		mux: mux,
-		srv: &http.Server{Handler: mux},
+		srv: &http.Server{Handler: middleware.CORSMiddleware(mux)},
 	}
 }
 

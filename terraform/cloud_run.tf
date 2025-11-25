@@ -176,6 +176,36 @@ resource "google_cloud_run_service" "cadence_web" {
           name  = "API_BASE_URL"
           value = google_cloud_run_service.cadence_api.status[0].url
         }
+
+        env {
+          name  = "NEXT_PUBLIC_FIREBASE_API_KEY"
+          value = var.firebase_api_key
+        }
+
+        env {
+          name  = "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"
+          value = var.firebase_auth_domain
+        }
+
+        env {
+          name  = "NEXT_PUBLIC_FIREBASE_PROJECT_ID"
+          value = var.firebase_project_id
+        }
+
+        env {
+          name  = "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"
+          value = var.firebase_storage_bucket
+        }
+
+        env {
+          name  = "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"
+          value = var.firebase_messaging_sender_id
+        }
+
+        env {
+          name  = "NEXT_PUBLIC_FIREBASE_APP_ID"
+          value = var.firebase_app_id
+        }
       }
     }
   }

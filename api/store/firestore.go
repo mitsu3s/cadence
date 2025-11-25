@@ -114,6 +114,35 @@ func (s *fireStore) ListEventsByRepoAndRange(ctx context.Context, repo string, f
 	return events, nil
 }
 
+func (s *fireStore) ListRepositories(ctx context.Context, owner string) ([]string, error) {
+	// installations コレクションから、指定されたアクティブなリポジトリを持つドキュメントを取得
+	q := s.client.Collection("installations").Where("account_login", "==", owner).Where("active", "==", true)
+
+	docs, err := q.Documents(ctx).GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var repos []string
+	seen := make(map[string]bool)
+
+	for _, d := range docs {
+		var inst model.Installation
+		if err := d.DataTo(&inst); err != nil {
+			logger.LogErr("failed to decode installation", "error", err)
+			continue
+		}
+		for _, r := range inst.Repositories {
+			if !seen[r] {
+				repos = append(repos, r)
+				seen[r] = true
+			}
+		}
+	}
+
+	return repos, nil
+}
+
 func (s *fireStore) Close() error {
 	return s.client.Close()
 }
