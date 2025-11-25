@@ -32,7 +32,7 @@ func New(cfg *config.Config, st store.Store) *Server {
 	return &Server{
 		cfg: cfg,
 		mux: mux,
-		srv: &http.Server{Handler: mux},
+		srv: &http.Server{Handler: middleware.CORSMiddleware(mux)},
 	}
 }
 
