@@ -22,18 +22,18 @@ export default function DashboardContent({ repo, days }: Props) {
   const shouldFetch = !!user;
 
   const { data: stats, error: statsError } = useSWR<StatsDailyResponse>(
-    shouldFetch ? `/api/stats/daily?repo=${repo}&days=${days}` : null,
+    shouldFetch ? `/stats/daily?repo=${repo}&days=${days}` : null,
     fetcher
   );
 
   const { data: rhythm, error: rhythmError } = useSWR<RhythmResponse>(
-    shouldFetch ? `/api/stats/rhythm?repo=${repo}&days=${days}` : null,
+    shouldFetch ? `/stats/rhythm?repo=${repo}&days=${days}` : null,
     fetcher
   );
 
   const today = new Date().toISOString().split("T")[0];
   const { data: timeline, error: timelineError } = useSWR<TimelineItem[]>(
-    shouldFetch ? `/api/timeline?repo=${repo}&date=${today}` : null,
+    shouldFetch ? `/timeline?repo=${repo}&date=${today}` : null,
     fetcher
   );
 

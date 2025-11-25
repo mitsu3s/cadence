@@ -24,7 +24,7 @@ const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: Side
   const username = user?.reloadUserInfo?.screenName;
 
   const { data: userRepos } = useSWR<UserReposResponse>(
-    username ? `/api/user/repos?user=${username}` : null,
+    username ? `/user/repos?user=${username}` : null,
     fetcher
   );
 

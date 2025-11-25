@@ -1,15 +1,18 @@
 import { useAuth } from "@/context/AuthContext";
 
 export function useFetcher() {
-  const { user } = useAuth();
+  const { user, apiBaseUrl } = useAuth();
 
   return async (url: string) => {
     if (!user) {
       throw new Error("Not authenticated");
     }
 
+    // Ensure we don't double slash if url starts with /
+    const fullUrl = `${apiBaseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+
     const token = await user.getIdToken();
-    const res = await fetch(url, {
+    const res = await fetch(fullUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
