@@ -51,3 +51,7 @@ export interface RhythmResponse {
   punch_card: PunchCardItem[];
   streak: StreakInfo;
 }
+
+export interface UserReposResponse {
+  repositories: string[];
+}
