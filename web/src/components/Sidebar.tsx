@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { LayoutGrid, Github, Menu, X } from "lucide-react";
+import LoginButton from "./LoginButton";
 
 interface SidebarContentProps {
   repo: string;
@@ -63,11 +64,7 @@ const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: Side
     </div>
 
     <div className="mt-auto">
-      <div className="bg-zinc-900/50 rounded-2xl p-4 border border-zinc-800/50">
-        <p className="text-xs text-zinc-500 leading-relaxed">
-          Visualize your coding momentum and find your flow state.
-        </p>
-      </div>
+      <LoginButton />
     </div>
   </>
 );

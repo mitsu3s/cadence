@@ -1,3 +1,8 @@
+"use client";
+
+import useSWR from "swr";
+import { useAuth } from "@/context/AuthContext";
+import { useFetcher } from "@/hooks/useFetcher";
 import { StatsDailyResponse, TimelineItem, RhythmResponse } from "../types";
 import { Activity, Calendar, Zap, Clock, Flame, TrendingUp } from "lucide-react";
 import ActivityChart from "./ActivityChart";
@@ -6,16 +11,60 @@ import RhythmWave from "./RhythmWave";
 import PunchCard from "./PunchCard";
 
 interface Props {
-  stats: StatsDailyResponse | null;
-  timeline: TimelineItem[];
-  rhythm: RhythmResponse | null;
+  repo: string;
+  days: number;
 }
 
-export default function DashboardContent({ stats, timeline, rhythm }: Props) {
-  if (!stats || !rhythm) {
+export default function DashboardContent({ repo, days }: Props) {
+  const { user, loading: authLoading } = useAuth();
+  const fetcher = useFetcher();
+
+  const shouldFetch = !!user;
+
+  const { data: stats, error: statsError } = useSWR<StatsDailyResponse>(
+    shouldFetch ? `/api/stats/daily?repo=${repo}&days=${days}` : null,
+    fetcher
+  );
+
+  const { data: rhythm, error: rhythmError } = useSWR<RhythmResponse>(
+    shouldFetch ? `/api/stats/rhythm?repo=${repo}&days=${days}` : null,
+    fetcher
+  );
+
+  const today = new Date().toISOString().split("T")[0];
+  const { data: timeline, error: timelineError } = useSWR<TimelineItem[]>(
+    shouldFetch ? `/api/timeline?repo=${repo}&date=${today}` : null,
+    fetcher
+  );
+
+  if (authLoading) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <div className="text-zinc-500 animate-pulse">Loading data...</div>
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <div className="text-zinc-500 animate-pulse">Initializing auth...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex flex-col justify-center items-center h-full min-h-[400px] gap-4">
+        <div className="text-zinc-400">Please sign in to view the dashboard.</div>
+      </div>
+    );
+  }
+
+  if (statsError || rhythmError || timelineError) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <div className="text-red-400">Error loading data. Please try again.</div>
+      </div>
+    );
+  }
+
+  if (!stats || !rhythm || !timeline) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[400px]">
+        <div className="text-zinc-500 animate-pulse">Loading dashboard data...</div>
       </div>
     );
   }
