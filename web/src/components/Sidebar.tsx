@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { LayoutGrid, Github, Menu, X } from "lucide-react";
 import useSWR from "swr";
 import { useAuth } from "@/context/AuthContext";
@@ -28,6 +28,14 @@ const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: Side
     fetcher
   );
 
+  useEffect(() => {
+    if (userRepos?.repositories && userRepos.repositories.length > 0) {
+      if (repo === "username/repository" || !repo) {
+        handleRepoChange(userRepos.repositories[0]);
+      }
+    }
+  }, [userRepos, repo, handleRepoChange]);
+
   return (
     <>
       {/* Logo */}
@@ -45,7 +53,7 @@ const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: Side
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider px-2">Repository</label>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-1 flex items-center focus-within:border-zinc-600 transition-colors">
+          <div className={`bg-zinc-900 border border-zinc-800 rounded-2xl p-1 flex items-center focus-within:border-zinc-600 transition-colors ${!user ? "opacity-50 cursor-not-allowed" : ""}`}>
             <div className="p-2 text-zinc-500">
               <Github size={18} />
             </div>
@@ -53,7 +61,8 @@ const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: Side
               <select
                 value={repo}
                 onChange={(e) => handleRepoChange(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm w-full text-zinc-200 placeholder:text-zinc-600 py-1 appearance-none cursor-pointer"
+                disabled={!user}
+                className="bg-transparent border-none outline-none text-sm w-full text-zinc-200 placeholder:text-zinc-600 py-1 appearance-none cursor-pointer disabled:cursor-not-allowed"
               >
                 <option value="" disabled>Select Repository</option>
                 {userRepos.repositories.map((r) => (
@@ -67,7 +76,8 @@ const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: Side
                 type="text"
                 value={repo}
                 onChange={(e) => handleRepoChange(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm w-full text-zinc-200 placeholder:text-zinc-600"
+                disabled={!user}
+                className="bg-transparent border-none outline-none text-sm w-full text-zinc-200 placeholder:text-zinc-600 disabled:cursor-not-allowed"
                 placeholder="owner/repo"
               />
             )}
@@ -76,12 +86,13 @@ const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: Side
 
         <div className="flex flex-col gap-2">
           <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider px-2">Time Range</label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className={`grid grid-cols-2 gap-2 ${!user ? "opacity-50 cursor-not-allowed" : ""}`}>
             {[7, 14, 30, 90].map((d) => (
               <button
                 key={d}
                 onClick={() => handleDaysChange(d.toString())}
-                className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                disabled={!user}
+                className={`px-4 py-3 rounded-xl text-sm font-medium transition-all disabled:cursor-not-allowed ${
                   Number(days) === d
                     ? "bg-zinc-100 text-zinc-900"
                     : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
