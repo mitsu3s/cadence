@@ -99,6 +99,14 @@ resource "google_project_iam_member" "cadence_ci_run_admin" {
   member  = "serviceAccount:${google_service_account.cadence_ci.email}"
 }
 
+# Cloud Run の Service Account User 権限
+# GitHub Actions 用のサービスアカウントに付与
+resource "google_service_account_iam_member" "cadence_ci_cloud_run" {
+  service_account_id = google_service_account.cadence_run.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.cadence_ci.email}"
+}
+
 # GCS を list する権限
 # GitHub Actions 用のサービスアカウントに付与
 resource "google_project_iam_member" "cadence_ci_storage_admin" {
@@ -117,7 +125,7 @@ resource "google_project_iam_member" "cadence_ci_sa_admin" {
 
 # Project IAM Admin 権限
 # GitHub Actions 用のサービスアカウントに付与
-resource "google_project_iam_member" "cadence_ci_pj_iam_admin" {
+resource "google_project_iam_member" "cadence_ci_pj_admin" {
   project = var.project_id
   role    = "roles/resourcemanager.projectIamAdmin"
   member  = "serviceAccount:${google_service_account.cadence_ci.email}"
@@ -141,7 +149,7 @@ resource "google_project_iam_member" "cadence_ci_secret_admin" {
 
 # Firestore の Admin 権限
 # GitHub Actions 用のサービスアカウントに付与
-resource "google_project_iam_member" "cadence_ci_datastore_admin" {
+resource "google_project_iam_member" "cadence_ci_firestore_admin" {
   project = var.project_id
   role    = "roles/datastore.indexAdmin"
   member  = "serviceAccount:${google_service_account.cadence_ci.email}"
@@ -169,12 +177,6 @@ resource "google_project_iam_member" "cadence_ci_logging_admin" {
   project = var.project_id
   role    = "roles/logging.admin"
   member  = "serviceAccount:${google_service_account.cadence_ci.email}"
-}
-
-resource "google_service_account_iam_member" "cadence_ci_cloud_run" {
-  service_account_id = google_service_account.cadence_run.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.cadence_ci.email}"
 }
 
 # Workload Identity Federation の権限
