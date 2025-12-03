@@ -105,17 +105,17 @@ jobs:
         working-directory: ./terraform
         run: terraform init -input=false
 
+      # Terraform State から現在のイメージタグを取得
+      # デプロイするサービスのタグだけ更新
       - name: Get current image tags
         id: current_tags
         working-directory: ./terraform
         run: |
-          # Terraform State から現在のイメージタグを取得
           API_TAG=$(terraform output -raw api_image_tag 2>/dev/null)
           RECEIVER_TAG=$(terraform output -raw receiver_image_tag 2>/dev/null)
           PROCESSOR_TAG=$(terraform output -raw processor_image_tag 2>/dev/null)
           WEB_TAG=$(terraform output -raw web_image_tag 2>/dev/null)
 
-          # デプロイするサービスのタグだけ更新
           case "${{ github.event.inputs.service }}" in
             api)
               API_TAG="${{ needs.build-and-push-image.outputs.image_tag }}"
