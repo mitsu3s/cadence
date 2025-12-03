@@ -56,6 +56,7 @@ go.work.sum
 
 # env file
 .env
+.envrc
 
 
 # https://raw.githubusercontent.com/github/gitignore/refs/heads/main/Terraform.gitignore
