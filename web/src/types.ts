@@ -55,3 +55,5 @@ export interface RhythmResponse {
 export interface UserReposResponse {
   repositories: string[];
 }
+
+export type TimelineResponse = TimelineItem[];
