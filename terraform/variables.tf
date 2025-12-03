@@ -45,39 +45,9 @@ variable "web_image_tag" {
   description = "Container image tag for cadence web"
 }
 
-variable "github_app_id" {
-  type        = string
-  description = "GitHub App ID"
-  sensitive   = true
-}
-
-variable "github_app_private_key" {
-  type        = string
-  description = "GitHub App private key"
-  sensitive   = true
-}
-
-variable "github_webhook_secret" {
-  type        = string
-  description = "GitHub Webhook secret used for signature verification"
-  sensitive   = true
-}
-
 variable "slack_notification_channel" {
   description = "Monitoring notification channel resource name"
   type        = string
-}
-
-variable "github_oauth_client_id" {
-  type        = string
-  description = "GitHub OAuth Client ID"
-  sensitive   = true
-}
-
-variable "github_oauth_client_secret" {
-  type        = string
-  description = "GitHub OAuth Client Secret"
-  sensitive   = true
 }
 
 variable "firebase_api_key" {
