@@ -3,10 +3,10 @@
 import { useAuth } from "@/context/AuthContext";
 import { Github, LogOut } from "lucide-react";
 import Image from "next/image";
-
+import { Dictionary } from "@/get-dictionary";
 
 interface Props {
-  dictionary: any;
+  dictionary: Dictionary;
 }
 
 export default function LoginButton({ dictionary }: Props) {

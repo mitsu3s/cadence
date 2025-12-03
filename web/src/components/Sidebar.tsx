@@ -17,7 +17,7 @@ interface SidebarContentProps {
   days: string;
   handleRepoChange: (value: string) => void;
   handleDaysChange: (value: string) => void;
-  dictionary: any;
+  dictionary: Dictionary;
   lang: Locale;
 }
 
