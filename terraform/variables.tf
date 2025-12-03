@@ -25,9 +25,9 @@ variable "project_number" {
   description = "Numeric Google project number"
 }
 
-variable "image_tag" {
+variable "api_image_tag" {
   type        = string
-  description = "Container image tag to deploy"
+  description = "Container image tag for cadence api"
 }
 
 variable "receiver_image_tag" {

@@ -8,7 +8,7 @@ resource "google_cloud_run_service" "cadence_api" {
       service_account_name = google_service_account.cadence_run.email
 
       containers {
-        image = "asia-northeast1-docker.pkg.dev/${var.project_id}/cadence-repository/cadence-api:${var.image_tag}"
+        image = "asia-northeast1-docker.pkg.dev/${var.project_id}/cadence-repository/cadence-api:${var.api_image_tag}"
 
         ports {
           container_port = 8080
