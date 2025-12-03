@@ -5,7 +5,11 @@ import { Github, LogOut } from "lucide-react";
 import Image from "next/image";
 
 
-export default function LoginButton() {
+interface Props {
+  dictionary: any;
+}
+
+export default function LoginButton({ dictionary }: Props) {
   const { user, signInWithGithub, logout } = useAuth();
 
   if (user) {
@@ -33,7 +37,7 @@ export default function LoginButton() {
           className="flex items-center justify-center gap-2 w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 rounded-xl py-2.5 text-sm font-medium transition-all"
         >
           <LogOut size={16} />
-          Sign out
+          {dictionary.common.signOut}
         </button>
       </div>
     );
@@ -45,7 +49,7 @@ export default function LoginButton() {
       className="flex items-center justify-center gap-2 w-full bg-zinc-100 hover:bg-white text-zinc-900 rounded-xl py-3 text-sm font-bold transition-all shadow-lg shadow-zinc-900/20"
     >
       <Github size={18} />
-      Sign in with GitHub
+      {dictionary.common.signInWithGithub}
     </button>
   );
 }
