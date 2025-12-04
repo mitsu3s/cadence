@@ -54,7 +54,7 @@ export default function LandingPage({ dictionary, lang }: Props) {
             {t.hero.badge}
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60 max-w-4xl mx-auto leading-tight whitespace-pre-line">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60 max-w-4xl mx-auto leading-normal pb-2 whitespace-pre-line">
             {t.hero.title}
           </h1>
 
