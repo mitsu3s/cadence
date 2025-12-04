@@ -146,7 +146,7 @@ export default function DashboardContent({ repo, days, dictionary }: Props) {
           <h2 className="text-lg font-medium text-zinc-200">{dictionary.dashboard.timeline.title}</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Timeline items={timeline} />
+            <Timeline items={timeline} dictionary={dictionary} />
         </div>
       </div>
     </div>

@@ -45,7 +45,7 @@ export const ja = {
   },
   dashboard: {
     title: "ダッシュボード",
-    overview: "{repo} の開発アクティビティ概要",
+    overview: "開発アクティビティ：{repo}",
     stats: {
       totalCommits: "総コミット数",
       currentStreak: "継続日数",
@@ -61,6 +61,7 @@ export const ja = {
     },
     timeline: {
       title: "今日のアクティビティ",
+      emptyState: "今日のアクティビティはありません。",
     },
   },
   docs: {

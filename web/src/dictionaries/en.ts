@@ -61,6 +61,7 @@ export const en = {
     },
     timeline: {
       title: "Today's Events",
+      emptyState: "No activity recorded for today.",
     },
   },
   docs: {
