@@ -30,12 +30,12 @@ export default function LandingPage({ dictionary, lang }: Props) {
             <Link href={`/${lang}/docs`} className="hover:text-white transition-colors">{dictionary.common.documentation}</Link>
           </nav>
           <div className="flex items-center gap-4">
-             <button
-               onClick={signInWithGithub}
-               className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
-             >
-               {dictionary.common.signIn}
-             </button>
+            <button
+              onClick={signInWithGithub}
+              className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+            >
+              {dictionary.common.signIn}
+            </button>
           </div>
         </div>
       </header>
@@ -58,7 +58,7 @@ export default function LandingPage({ dictionary, lang }: Props) {
             {t.hero.title}
           </h1>
 
-          <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-12 leading-relaxed">
+          <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-12 leading-relaxed text-center">
             {t.hero.description}
           </p>
 

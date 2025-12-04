@@ -31,7 +31,7 @@ export default async function PrivacyPage({ params }: Props) {
         </Link>
 
         <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">
+          <h1 className="text-5xl font-bold mb-4 leading-normal pb-2 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">
             {isJapanese ? "プライバシーポリシー" : "Privacy Policy"}
           </h1>
           <p className="text-sm text-zinc-500">
