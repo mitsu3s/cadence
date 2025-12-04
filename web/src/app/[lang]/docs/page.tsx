@@ -15,15 +15,15 @@ export default async function IntroductionPage({ params }: Props) {
     <div className="space-y-12 animate-fade-in">
       {/* Header */}
       <div className="space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight text-white">{t.title}</h1>
-        <p className="text-xl text-zinc-400 leading-relaxed max-w-2xl">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">{t.title}</h1>
+        <p className="text-lg md:text-xl text-zinc-400 leading-relaxed max-w-2xl">
           {t.subtitle}
         </p>
       </div>
 
       {/* Main Content */}
       <div className="prose prose-invert prose-zinc max-w-none">
-        <p className="text-lg text-zinc-300 leading-relaxed">
+        <p className="text-lg md:text-xl text-zinc-300 leading-relaxed">
           {t.description}
         </p>
       </div>
