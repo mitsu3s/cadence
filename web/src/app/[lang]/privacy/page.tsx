@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+
 import { getDictionary } from "@/get-dictionary";
 import { Locale } from "@/i18n-config";
 import Link from "next/link";
