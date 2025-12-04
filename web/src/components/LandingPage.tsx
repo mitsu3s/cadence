@@ -127,6 +127,14 @@ export default function LandingPage({ dictionary, lang }: Props) {
             </div>
             <span className="font-bold text-zinc-400">Cadence</span>
           </div>
+          <div className="flex items-center gap-6 text-sm">
+            <Link href={`/${lang}/terms`} className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              {dictionary.common.terms}
+            </Link>
+            <Link href={`/${lang}/privacy`} className="text-zinc-500 hover:text-zinc-300 transition-colors">
+              {dictionary.common.privacy}
+            </Link>
+          </div>
           <p className="text-sm text-zinc-600">
             {t.footer.copyright}
           </p>

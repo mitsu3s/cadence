@@ -7,6 +7,8 @@ export const en = {
     backToApp: "Back to App",
     loading: "Loading...",
     features: "Features",
+    terms: "Terms of Service",
+    privacy: "Privacy Policy",
   },
   landingPage: {
     hero: {
@@ -32,7 +34,7 @@ export const en = {
       },
     },
     footer: {
-      copyright: "© 2025 Mitsuki Sugihara. Built for developers.",
+      copyright: "© 2025 Mitsuki Sugihara.",
     },
   },
   sidebar: {
