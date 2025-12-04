@@ -60,7 +60,7 @@ export const en = {
       description: "Daily Rhythm",
     },
     timeline: {
-      title: "Recent Events",
+      title: "Today's Events",
     },
   },
   docs: {

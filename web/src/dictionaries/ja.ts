@@ -15,21 +15,21 @@ export const ja = {
       badge: "v1.0 リリース",
       title: "開発のリズムを\n可視化する",
       subtitle: "Coding Rhythm",
-      description: "Cadenceは、GitHubのアクティビティを見やすく、実用的なインサイトに変えるツールです。開発の勢いを理解し、ストリークを維持し、エンジニアリングのフローを最適化しましょう。",
+      description: "Cadenceは、GitHubのアクティビティを見やすく、実用的なインサイトとして提供するツールです。開発のリズムを理解し、ストリークを維持し、エンジニアリングのフローを最適化しましょう。",
       cta: "GitHubでログイン",
       readDocs: "ドキュメントを読む",
     },
     features: {
       momentum: {
-        title: "Momentum Tracking",
-        description: "開発の速度（Velocity）を時系列で可視化します。最も生産性の高い時間帯や曜日を特定し、スケジュールを最適化できます。",
+        title: "開発ペースの可視化",
+        description: "開発の勢いを時系列で可視化します。最も生産性の高い時間帯や曜日を特定し、スケジュールを最適化できます。",
       },
       streak: {
-        title: "Streak Analysis",
-        description: "コーディングのストリーク（継続）を途切れさせないようにしましょう。開発プロセスをゲーム化し、一貫した習慣を構築します。",
+        title: "ストリーク分析",
+        description: "コーディングの継続日数を途切れさせないようにしましょう。開発プロセスをゲーム化し、一貫した習慣を構築します。",
       },
       insights: {
-        title: "Deep Insights",
+        title: "詳細なインサイト",
         description: "複数のリポジトリを連携し、すべてのプロジェクトにわたるエンジニアリングのインパクトを一元管理できます。",
       },
     },
@@ -60,7 +60,7 @@ export const ja = {
       description: "時間帯別のアクティビティ",
     },
     timeline: {
-      title: "最近のアクティビティ",
+      title: "今日のアクティビティ",
     },
   },
   docs: {
@@ -71,16 +71,16 @@ export const ja = {
     },
     introduction: {
       title: "イントロダクション",
-      subtitle: "Cadenceは、開発のモメンタムを理解し、ストリークを追跡し、ワークフローを最適化するための「開発リズム可視化ツール」です。",
+      subtitle: "Cadenceは、開発のリズムやペースを可視化し、ストリークを追跡し、ワークフローを最適化するための「開発リズム可視化ツール」です。",
       description: "GitHubのアクティビティを分析することで、Cadenceはあなたのエンジニアリング習慣に関する実用的なインサイトを提供します。一貫性を向上させたい個人の開発者であれ、プロジェクトの速度を把握したいチームリーダーであれ、Cadenceは美しく分かりやすいダッシュボードで必要なデータを提供します。",
       features: {
         title: "主な機能",
         momentum: {
-          title: "Momentum Tracking",
-          description: "開発速度を可視化し、生産性の高い期間を特定します。",
+          title: "開発ペースの可視化",
+          description: "開発の勢いを可視化し、生産性の高い期間を特定します。",
         },
         streak: {
-          title: "Streak Analysis",
+          title: "ストリーク分析",
           description: "コーディングの継続を維持し、一貫した開発習慣を構築します。",
         },
         multiRepo: {
