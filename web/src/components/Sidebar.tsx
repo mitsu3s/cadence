@@ -2,21 +2,26 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState, useEffect } from "react";
-import { LayoutGrid, Github, Menu, X } from "lucide-react";
+import { LayoutGrid, Github, Menu, X, Book } from "lucide-react";
 import useSWR from "swr";
 import { useAuth } from "@/context/AuthContext";
 import { useFetcher } from "@/hooks/useFetcher";
 import { UserReposResponse } from "@/types";
 import LoginButton from "./LoginButton";
+import Link from "next/link";
+import { Locale } from "@/i18n-config";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 interface SidebarContentProps {
   repo: string;
   days: string;
   handleRepoChange: (value: string) => void;
   handleDaysChange: (value: string) => void;
+  dictionary: Dictionary;
+  lang: Locale;
 }
 
-const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: SidebarContentProps) => {
+const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange, dictionary, lang }: SidebarContentProps) => {
   const { user } = useAuth();
   const fetcher = useFetcher();
 
@@ -52,7 +57,7 @@ const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: Side
       {/* Navigation / Filters */}
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider px-2">Repository</label>
+          <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider px-2">{dictionary.sidebar.repository}</label>
           <div className={`bg-zinc-900 border border-zinc-800 rounded-2xl p-1 flex items-center focus-within:border-zinc-600 transition-colors ${!user ? "opacity-50 cursor-not-allowed" : ""}`}>
             <div className="p-2 text-zinc-500">
               <Github size={18} />
@@ -64,7 +69,7 @@ const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: Side
                 disabled={!user}
                 className="bg-transparent border-none outline-none text-sm w-full text-zinc-200 placeholder:text-zinc-600 py-1 appearance-none cursor-pointer disabled:cursor-not-allowed"
               >
-                <option value="" disabled>Select Repository</option>
+                <option value="" disabled>{dictionary.sidebar.selectRepository}</option>
                 {userRepos.repositories.map((r) => (
                   <option key={r} value={r} className="bg-zinc-900 text-zinc-200">
                     {r}
@@ -85,7 +90,7 @@ const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: Side
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider px-2">Time Range</label>
+          <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider px-2">{dictionary.sidebar.timeRange}</label>
           <div className={`grid grid-cols-2 gap-2 ${!user ? "opacity-50 cursor-not-allowed" : ""}`}>
             {[7, 14, 30, 90].map((d) => (
               <button
@@ -98,21 +103,36 @@ const SidebarContent = ({ repo, days, handleRepoChange, handleDaysChange }: Side
                     : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
                 }`}
               >
-                {d} Days
+                {d} {dictionary.sidebar.days}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-    <div className="mt-auto">
-      <LoginButton />
+    <div className="mt-auto flex flex-col gap-4">
+      <LanguageSwitcher />
+      <Link
+        href={`/${lang}/docs`}
+        className="flex items-center gap-3 px-2 py-2 text-sm font-medium text-zinc-500 hover:text-zinc-200 transition-colors rounded-lg hover:bg-zinc-900"
+      >
+        <Book size={18} />
+        {dictionary.common.documentation}
+      </Link>
+      <LoginButton dictionary={dictionary} />
     </div>
   </>
   );
 };
 
-export default function Sidebar() {
+import { Dictionary } from "@/get-dictionary";
+
+interface SidebarProps {
+  dictionary: Dictionary;
+  lang: Locale;
+}
+
+export default function Sidebar({ dictionary, lang }: SidebarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
@@ -163,6 +183,8 @@ export default function Sidebar() {
           days={days}
           handleRepoChange={handleRepoChange}
           handleDaysChange={handleDaysChange}
+          dictionary={dictionary}
+          lang={lang}
         />
       </aside>
 
@@ -176,6 +198,8 @@ export default function Sidebar() {
               days={days}
               handleRepoChange={handleRepoChange}
               handleDaysChange={handleDaysChange}
+              dictionary={dictionary}
+              lang={lang}
             />
           </aside>
         </div>

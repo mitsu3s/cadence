@@ -1,15 +1,17 @@
 import { TimelineItem } from "../types";
 import { GitCommit, GitPullRequest, GitMerge, Circle } from "lucide-react";
+import { Dictionary } from "@/get-dictionary";
 
 interface Props {
   items: TimelineItem[];
+  dictionary: Dictionary;
 }
 
-export default function Timeline({ items }: Props) {
+export default function Timeline({ items, dictionary }: Props) {
   if (items.length === 0) {
     return (
       <div className="text-zinc-500 text-sm text-center py-8">
-        No activity recorded for this period.
+        {dictionary.dashboard.timeline.emptyState}
       </div>
     );
   }

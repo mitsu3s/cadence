@@ -1,19 +1,27 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { AuthProvider } from "@/context/AuthContext";
-import "./globals.css";
-import Sidebar from "@/components/Sidebar";
+import "../globals.css";
 
 export const metadata: Metadata = {
   title: "Cadence - Development Rhythm Visualizer",
   description: "Visualize your development rhythm",
 };
 
-export default function RootLayout({
+import { i18n } from "@/i18n-config";
+
+export async function generateStaticParams() {
+  return i18n.locales.map((locale) => ({ lang: locale }));
+}
+
+export default async function RootLayout({
   children,
-}: Readonly<{
+  params,
+}: {
   children: React.ReactNode;
-}>) {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+
   // Runtime Configuration: Read from process.env on the server
   const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
@@ -27,15 +35,10 @@ export default function RootLayout({
   const apiBaseUrl = process.env.API_BASE_URL || "http://localhost:4000";
 
   return (
-    <html lang="en">
-      <body className="bg-black text-zinc-200 antialiased flex overflow-hidden">
+    <html lang={lang}>
+      <body className="bg-black text-zinc-200 antialiased">
         <AuthProvider config={firebaseConfig} apiBaseUrl={apiBaseUrl}>
-          <Suspense fallback={<div className="w-80 h-screen bg-zinc-950 border-r border-zinc-800" />}>
-            <Sidebar />
-          </Suspense>
-          <main className="flex-1 overflow-y-auto h-screen relative">
-            {children}
-          </main>
+          {children}
         </AuthProvider>
       </body>
     </html>
