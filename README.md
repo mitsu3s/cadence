@@ -10,13 +10,13 @@ GitHub のイベントを収集・可視化して、自分の開発リズム（�
 
 ## Present condition
 
--   Github App (現在はローカル提供のみ) を通じて、リポジトリのイベントやインストール状況を収集しています。
+-   Github App (現在は公開前) を通じて、リポジトリのイベントやインストール状況を収集しています。
 -   Cloud Run 上で動作し、Firestore にデータを保存しています。
 -   API を通じて情報を取得し、ダッシュボードで可視化しています。
+-   ダッシュボードでは、Github による認証を必要とします。
 
 ## Future work
 
 -   キャッシュ or 事前処理によるパフォーマンス改善
--   Cloud Armor や Load Balancer を用いたサービスの外側の強化
+-   Cloud Armor や Load Balancer を用いたサービス外側の強化
 -   Github App の公開
--   ダッシュボード上での認証・認可の実装
