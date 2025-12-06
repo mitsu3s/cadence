@@ -1,6 +1,6 @@
 module github.com/mitsu3s/cadence
 
-go 1.24.9
+go 1.25.5
 
 require (
 	cloud.google.com/go/firestore v1.20.0

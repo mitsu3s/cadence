@@ -1,9 +1,8 @@
 module github.com/mitsu3s/cadence
 
-go 1.24.9
+go 1.25.5
 
 require (
-	cloud.google.com/go/firestore v1.20.0
 	cloud.google.com/go/pubsub v1.49.0
 	go.uber.org/zap v1.27.0
 )
@@ -14,7 +13,6 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.8.0 // indirect
 	cloud.google.com/go/iam v1.5.2 // indirect
-	cloud.google.com/go/longrunning v0.6.7 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
