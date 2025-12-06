@@ -1,10 +1,11 @@
 module github.com/mitsu3s/cadence
 
-go 1.24.9
+go 1.25.5
 
 require (
 	cloud.google.com/go/firestore v1.20.0
 	go.uber.org/zap v1.27.0
+	google.golang.org/grpc v1.74.2
 )
 
 require (
@@ -37,6 +38,5 @@ require (
 	google.golang.org/genproto v0.0.0-20250603155806-513f23925822 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250818200422-3122310a409c // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250818200422-3122310a409c // indirect
-	google.golang.org/grpc v1.74.2 // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
 )
