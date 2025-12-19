@@ -9,11 +9,47 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Rectangle,
+  RectangleProps,
 } from "recharts";
 
 interface Props {
   data: DailyStat[];
 }
+
+type StackKey = "push_commits" | "pr_opened" | "pr_merged";
+const STACK_ORDER: StackKey[] = ["push_commits", "pr_opened", "pr_merged"];
+
+interface CustomBarProps extends RectangleProps {
+  payload?: DailyStat;
+  dataKey?: StackKey;
+}
+
+// Custom bar shape: Apply top rounded corners only to the topmost bar
+const CustomBar = (props: CustomBarProps) => {
+  const { payload, dataKey } = props;
+
+  if (!payload || !dataKey) {
+    return <Rectangle {...props} />;
+  }
+
+  const currentIndex = STACK_ORDER.indexOf(dataKey);
+
+  // Check the values of all bars above this bar
+  const hasUpperBar = STACK_ORDER
+    .slice(currentIndex + 1)
+    .some(upperKey => payload[upperKey] > 0);
+
+  // If there are no bars above, this is the topmost bar, so apply rounded corners
+  const shouldRound = !hasUpperBar && payload[dataKey] > 0;
+
+  return (
+    <Rectangle
+      {...props}
+      radius={shouldRound ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+    />
+  );
+};
 
 export default function ActivityChart({ data }: Props) {
   return (
@@ -47,9 +83,9 @@ export default function ActivityChart({ data }: Props) {
             itemStyle={{ color: "#fafafa" }}
             cursor={{ fill: "#27272a" }}
           />
-          <Bar dataKey="push_commits" name="Commits" stackId="a" fill="#3b82f6" radius={[0, 0, 4, 4]} />
-          <Bar dataKey="pr_opened" name="PR Opened" stackId="a" fill="#a855f7" />
-          <Bar dataKey="pr_merged" name="PR Merged" stackId="a" fill="#22c55e" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="push_commits" name="Commits" stackId="a" fill="#3b82f6" shape={<CustomBar />} />
+          <Bar dataKey="pr_opened" name="PR Opened" stackId="a" fill="#22c55e" shape={<CustomBar />} />
+          <Bar dataKey="pr_merged" name="PR Merged" stackId="a" fill="#a855f7" shape={<CustomBar />} />
         </BarChart>
       </ResponsiveContainer>
     </div>

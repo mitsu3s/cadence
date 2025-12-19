@@ -23,7 +23,7 @@ export default function PunchCard({ data }: Props) {
           <div key={item.hour} className="flex-1 flex flex-col items-center gap-2 group h-full">
             <div className="w-full relative h-full flex items-end">
               <div
-                className={`w-full rounded-sm transition-all duration-300 ${bgClass} group-hover:opacity-80`}
+                className={`w-full rounded-t transition-all duration-300 ${bgClass} group-hover:opacity-80`}
                 style={{ height: `${Math.max((item.count / maxCount) * 100, 10)}%` }}
               />
             </div>
