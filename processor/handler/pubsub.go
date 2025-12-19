@@ -158,12 +158,19 @@ func PubSub(st store.Store) http.HandlerFunc {
 				occurredAt = p.PullRequest.CreatedAt
 			}
 
+			// GitHub は PR がマージされた時 action="closed" + merged=true を送る
+			// 統計処理のため、action を "merged" に変換する
+			action := p.Action
+			if p.Action == "closed" && p.PullRequest.Merged {
+				action = "merged"
+			}
+
 			ev := model.Event{
 				ID:           id,
 				Type:         model.EventTypePullRequest,
 				Repo:         p.Repository.FullName,    // "owner/name"
 				Actor:        p.PullRequest.User.Login, // PR の author
-				Action:       p.Action,                 // "opened", "closed", "synchronize" など
+				Action:       action,                   // "opened", "closed", "merged", "synchronize" など
 				OccurredAt:   occurredAt,               // GitHub 側のイベント発生時刻
 				ReceivedAt:   time.Now(),               // cadence が受け取った時刻
 				PRNumber:     p.PullRequest.Number,
