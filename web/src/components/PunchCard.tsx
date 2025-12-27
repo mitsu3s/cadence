@@ -20,7 +20,7 @@ export default function PunchCard({ data }: Props) {
         if (intensity > 0.75) bgClass = "bg-purple-500";
 
         return (
-          <div key={item.hour} className="flex-1 flex flex-col items-center gap-2 group h-full">
+          <div key={item.hour} className="flex-1 min-w-0 flex flex-col items-center gap-2 group h-full">
             <div className="w-full relative h-full flex items-end">
               <div
                 className={`w-full rounded-t transition-all duration-300 ${bgClass} group-hover:opacity-80`}
