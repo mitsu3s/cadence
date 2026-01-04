@@ -1,41 +1,85 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base"],
+  "extends": [
+    "config:recommended"
+  ],
   "timezone": "Asia/Tokyo",
   "dependencyDashboard": true,
   "platformAutomerge": false,
-  "automergeSchedule": ["0 10 * * *"],
+  "automergeSchedule": [
+    "0 10 * * *"
+  ],
   "packageRules": [
     {
-      "matchManagers": ["npm"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "addLabels": ["npm", "minor"]
+      "matchManagers": [
+        "npm"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "addLabels": [
+        "npm",
+        "minor"
+      ]
     },
     {
-      "matchManagers": ["npm"],
-      "matchUpdateTypes": ["major"],
-      "addLabels": ["npm", "major"],
+      "matchManagers": [
+        "npm"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "addLabels": [
+        "npm",
+        "major"
+      ],
       "automerge": false
     },
     {
-      "matchManagers": ["gomod"],
-      "postUpdateOptions": ["gomodTidy"],
-      "addLabels": ["go"]
+      "matchManagers": [
+        "gomod"
+      ],
+      "postUpdateOptions": [
+        "gomodTidy"
+      ],
+      "addLabels": [
+        "go"
+      ]
     },
     {
-      "matchManagers": ["gomod"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "addLabels": ["minor"]
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "addLabels": [
+        "minor"
+      ]
     },
     {
-      "matchManagers": ["gomod"],
-      "matchUpdateTypes": ["major"],
-      "addLabels": ["major"],
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "addLabels": [
+        "major"
+      ],
       "automerge": false
     },
     {
-      "matchManagers": ["npm", "gomod"],
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchManagers": [
+        "npm",
+        "gomod"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "minimumReleaseAge": "7 days",
       "automerge": true,
       "automergeType": "pr"
